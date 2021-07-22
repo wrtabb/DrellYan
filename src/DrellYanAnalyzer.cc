@@ -45,7 +45,8 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	}//end if ntupType
 	else if(ntupType==TEST){
 		_base_directory = base_directory_test;
-		_files_LL = dy_EE_test;
+		if(lepType==ELE) _files_LL = dy_EE_test;
+		else if(lepType==MUON) _files_LL = dy_MuMu_test;
 		_files.push_back(_files_LL);
 	}//end if ntupType
 	_nSampleTypes = _files.size();
@@ -214,13 +215,13 @@ void DrellYanAnalyzer::InitializeHistograms()
 	TString totalName;
 	vector<TH1D*> _histVars;
 	for(int i=0;i<nSamples;i++){
-		TString massName = "histInvMass_";
+		TString massName = "histInvMass";
 		massName += sampleNames.at(i);	
 		TH1D*hMass = new TH1D(massName,"",nMassBins,massbins);
-		TString rapidityName = "histRapidity_";
+		TString rapidityName = "histRapidity";
 		rapidityName += sampleNames.at(i);	
 		TH1D*hRapidity = new TH1D(rapidityName,"",nRapidityBins,rapiditybins);
-		TString ptName = "histPt_";
+		TString ptName = "histPt";
 		ptName += sampleNames.at(i);	
 		TH1D*hPt = new TH1D(ptName,"",nPtBins,ptbins);
 
@@ -245,9 +246,23 @@ double DrellYanAnalyzer::GetWeights(int index1,int index2)
 	if(sampleType==SAMPLE_LL) xSec = xSec_LL;
 	double xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
 
+	//-----Pileup Weight-----//
+	double puWeight = GetPUWeight();
+
+	//-----Gen Weights-----//
 	double sumGenWeight = GetGenWeightSum(index1,index2);
 	double genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;  
-	double weight = xSecWeight*genWeight;
+
+	//-----Total Weight-----//
+	double weight = xSecWeight*genWeight*puWeight;
+	cout << "**************************************" << endl;
+	cout << "Weights per sample" << endl;
+	cout << "**************************************" << endl;
+	cout << "xSecWeight = " << xSecWeight<< endl;
+	cout << "genWeight = " << genWeight << endl;
+	cout << "puWeight = " << puWeight << endl;
+	cout << "Total = " << weight << endl;
+	cout << "**************************************" << endl;
 	return weight;
 }
 
@@ -270,10 +285,18 @@ double DrellYanAnalyzer::GetGenWeightSum(int index1,int index2)
 		varGenWeight += GENEvt_weight*GENEvt_weight;//variance of genweights
 		sumRawGenWeight += GENEvt_weight;
 	}
-
 	return sumGenWeight;
 }//end GetGenWeight
 
+double DrellYanAnalyzer::GetPUWeight()
+{
+	using namespace DrellYanVariables;
+	double puWeight = 1.0;	
+	TFile*file = new TFile("data/pileup.root");
+	TH1F*hPileupRatio = (TH1F*)file->Get("hPileupRatio");
+	puWeight = hPileupRatio->GetBinContent(hPileupRatio->FindBin(nPileUp));
+	return puWeight;
+}
 
 ///////////////////////////////////////
 //-----Get Leptons From an Event-----//
@@ -287,6 +310,7 @@ int DrellYanAnalyzer::EventLoop()
 	int iHard1,iHard2;
 	int iFSR1,iFSR2;
 	int iDressed1,iDressed2;
+	int iLep1,iLep2;
 	double lMass;
 	Long64_t eventCount = 0;
 	if(lepType==ELE) lMass = eMass;
@@ -303,30 +327,59 @@ int DrellYanAnalyzer::EventLoop()
 			double weights = GetWeights(i,j);
 			for(Long64_t iEntry=0;iEntry<nentries;iEntry++){
 				eventCount++;
-				double pt1,pt2;
-				double eta1,eta2;
-				double phi1,phi2; 
+				double pt1 = -1000;
+				double pt2 = -1000;;
+				double eta1 = -1000;
+				double eta2 = -1000;
+				double phi1 = -1000;
+				double phi2 = -1000;; 
+				double invMass = -1000;
+				double rapidity = -1000;
+				double pt = -1000;
 				double var;	
 				_trees.at(i).at(j)->GetEntry(iEntry);
-				int nDileptons = DrellYanAnalyzer::GetGenLeptons(iHard1,iHard2,
-					  	  		                 iFSR1,iFSR2);
-
-				if(nDileptons>0){
-					pt1  = GENLepton_pT[iHard1];
-					eta1 = GENLepton_eta[iHard1];
-					phi1 = GENLepton_phi[iHard1];
-					pt2  = GENLepton_pT[iHard2];
-					eta2 = GENLepton_eta[iHard2];
-					phi2 = GENLepton_phi[iHard2];
-					double invMass = CalcVariable(pt1,eta1,phi1,lMass,
-								      pt2,eta2,phi2,lMass,
-								      INV_MASS);
-					double rapidity = CalcVariable(pt1,eta1,phi1,lMass,
-								       pt2,eta2,phi2,lMass,
-								       RAPIDITY);
-					double pt = CalcVariable(pt1,eta1,phi1,lMass,
-								 pt2,eta2,phi2,lMass,
-								 PT);
+				int nDileptonsGen = 
+					DrellYanAnalyzer::GetGenLeptons(iHard1,iHard2,
+					  	  		        iFSR1,iFSR2);
+				int nDileptonsReco = 
+					DrellYanAnalyzer::GetRecoLeptons(iLep1,iLep2);
+				if(nDileptonsGen>0 && nDileptonsReco>0){
+//					pt1  = GENLepton_pT[iHard1];
+//					eta1 = GENLepton_eta[iHard1];
+//					phi1 = GENLepton_phi[iHard1];
+//					pt2  = GENLepton_pT[iHard2];
+//					eta2 = GENLepton_eta[iHard2];
+//					phi2 = GENLepton_phi[iHard2];
+					if(lepType==ELE){
+						pt1  = Electron_pT[iLep1];
+						eta1 = Electron_eta[iLep1];
+						phi1 = Electron_phi[iLep1];
+						pt2  = Electron_pT[iLep2];
+						eta2 = Electron_eta[iLep2];
+						phi2 = Electron_phi[iLep2];
+					}
+					else if(lepType==MUON){
+						pt1  = Muon_pT[iLep1];
+						eta1 = Muon_eta[iLep1];
+						phi1 = Muon_phi[iLep1];
+						pt2  = Muon_pT[iLep2];
+						eta2 = Muon_eta[iLep2];
+						phi2 = Muon_phi[iLep2];
+					}
+					else{
+						cout << "ERROR in Event Loop!" << endl;
+						cout << "Lepton type not specified" << endl;
+						return 0;
+					}
+					invMass = CalcVariable(pt1,eta1,phi1,lMass,
+							       pt2,eta2,phi2,lMass,
+							       INV_MASS);
+					rapidity = CalcVariable(pt1,eta1,phi1,lMass,
+								pt2,eta2,phi2,lMass,
+								RAPIDITY);
+					pt = CalcVariable(pt1,eta1,phi1,lMass,
+							  pt2,eta2,phi2,lMass,
+							  PT);
 					for(int k=0;k<nHists;k++){
 						if(k==0) var = invMass;
 						else if(k==1) var = rapidity;
@@ -598,7 +651,11 @@ bool DrellYanAnalyzer::PassGenToRecoMatchMu(int genIndex,int &recoIndex)
 void DrellYanAnalyzer::SaveResults()
 {
 	using namespace DrellYanVariables;
-	TFile*file = new TFile("data/DrellYanHistograms.root","recreate");
+	TString filesave = "data/DYHists";
+	if(_lepType==ELE) filesave += "_EE.root";
+	else if(_lepType==MUON) filesave += "_MuMu.root";
+
+	TFile*file = new TFile(filesave,"recreate");
 	for(int i=0;i<_nSampleTypes;i++){
 		int nFiles = _files.at(i).size();
 		for(int j=0;j<_nHistTypes;j++){

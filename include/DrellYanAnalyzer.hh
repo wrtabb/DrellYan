@@ -63,6 +63,7 @@ class DrellYanAnalyzer
 		//calculations
 		double GetWeights(int index,int index2);
 		double GetGenWeightSum(int index,int index2);
+		double GetPUWeight();
 		double CalcVariable(double pt1,double eta1,double phi1,double mass1,
 				    double pt2,double eta2,double phi2,double mass2,
 				    DrellYanVariables::VarType varType);

@@ -40,7 +40,7 @@ namespace DrellYanVariables
 		//Drell-Yan MC signal
 		//Electrons
 		"DYLL_M10to50_EE.root",					
-		"DYLL_M50To100_EE.root",	
+		"DYLL_M50to100_EE.root",	
 		"DYLL_M100to200_EE.root",				
 		"DYLL_M200to400_EE.root",				
 		"DYLL_M400to500_EE.root",				
@@ -54,7 +54,7 @@ namespace DrellYanVariables
 	vector<TString> dy_MuMu_v2p6 = {
 		//Muons
 		"DYLL_M10to50_MuMu.root",				
-		"DYLL_M50To100_MuMu.root",	
+		"DYLL_M50to100_MuMu.root",	
 		"DYLL_M100to200_MuMu.root",				
 		"DYLL_M200to400_MuMu.root",				
 		"DYLL_M400to500_MuMu.root",				
@@ -90,7 +90,7 @@ namespace DrellYanVariables
 	vector<TString> taus_v2p6 = {
 		//Taus
 		"DYLL_M10to50_TauTau.root",				
-		"DYLL_M50To100_TauTau.root",	
+		"DYLL_M50to100_TauTau.root",	
 		"DYLL_M100to200_TauTau.root",				
 		"DYLL_M200to400_TauTau.root",				
 		"DYLL_M400to500_TauTau.root",				
@@ -120,7 +120,7 @@ namespace DrellYanVariables
 		//Drell-Yan MC signal
 		//Electrons
 		"DYLL_M10to50_EE.root",					
-		"DYLL_M50To100_EE.root",	
+		"DYLL_M50to100_EE.root",	
 		"DYLL_M100to200_EE.root",				
 		"DYLL_M200to400_EE.root",				
 		"DYLL_M400to500_EE.root",				
@@ -134,7 +134,7 @@ namespace DrellYanVariables
 	vector<TString> dy_MuMu_test = {
 		//Muons
 		"DYLL_M10to50_MuMu.root",				
-		"DYLL_M50To100_MuMu.root",	
+		"DYLL_M50to100_MuMu.root",	
 		"DYLL_M100to200_MuMu.root",				
 		"DYLL_M200to400_MuMu.root",				
 		"DYLL_M400to500_MuMu.root",				
@@ -147,7 +147,7 @@ namespace DrellYanVariables
 	};
 
 	vector<double> xSec_LL = {
-		18610.0*3,	//DYLL_10to50 v1,v2,ext1v1 combined (NLO)
+		18610.0,	//DYLL_10to50 v1,v2,ext1v1 combined (NLO)
 		1923.26*3,	//DYLL_50to100(NNLO)
 		78.1258*3,	//DYLL_100to200(NNLO)
 		2.73309*3,	//DYLL_200to400(NNLO) 
@@ -157,8 +157,7 @@ namespace DrellYanVariables
 		0.0105845*3,	//DYLL_800to1000(NNLO)
 		0.00556507*3,	//DYLL_1000to1500(NNLO)
 		0.000730495*3,	//DYLL_1500to2000(NNLO)
-		0.00016844*3,	//DYLL_2000to3000(NNLO)
-		
+		0.00016844*3	//DYLL_2000to3000(NNLO)
 	};
 	vector<double> ntuple_xsec_tops = {
 		35.85,	//ST_tbarW(NNLO)
