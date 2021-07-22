@@ -7,22 +7,40 @@ namespace DrellYanVariables
 	enum NtupleType{
 		V2P3,
 		V2P6,
-		V2P7,
-		V2P8
+		TEST
 	};
 	
 	//Lepton selection
 	enum LepType{
 		ELE,
-		MUON
+		MUON,
+		NONE
 	};
 
+	//Sample Types
+	enum SampleType{
+		SAMPLE_LL,
+		SAMPLE_TOP,
+		SAMPLE_FAKE,
+		SAMPLE_DIBOSON,
+		SAMPLE_TAU,
+		SAMPLE_DATA,
+		SAMPLE_ALL
+	};
+	//Variable Types for placing in histograms
+	enum VarType{
+		INV_MASS,
+		RAPIDITY,
+		PT
+	};
+	//-----V2.6-----//	
 	TString base_directory_v2p6 = "root://xrootd-local.unl.edu///store/user/wtabb/DrellYan_13TeV_2016/v2p6/skims/";
+
 	vector<TString> dy_EE_v2p6 = {
 		//Drell-Yan MC signal
 		//Electrons
 		"DYLL_M10to50_EE.root",					
-		"DYLL_M50toInf_truncated_M50To100_EE_base.root",	
+		"DYLL_M50To100_EE.root",	
 		"DYLL_M100to200_EE.root",				
 		"DYLL_M200to400_EE.root",				
 		"DYLL_M400to500_EE.root",				
@@ -36,7 +54,7 @@ namespace DrellYanVariables
 	vector<TString> dy_MuMu_v2p6 = {
 		//Muons
 		"DYLL_M10to50_MuMu.root",				
-		"DYLL_M50toInf_truncated_M50To100_MuMu_base.root",	
+		"DYLL_M50To100_MuMu.root",	
 		"DYLL_M100to200_MuMu.root",				
 		"DYLL_M200to400_MuMu.root",				
 		"DYLL_M400to500_MuMu.root",				
@@ -72,7 +90,7 @@ namespace DrellYanVariables
 	vector<TString> taus_v2p6 = {
 		//Taus
 		"DYLL_M10to50_TauTau.root",				
-		"DYLL_M50toInf_truncated_M50To100_TauTau_base.root",	
+		"DYLL_M50To100_TauTau.root",	
 		"DYLL_M100to200_TauTau.root",				
 		"DYLL_M200to400_TauTau.root",				
 		"DYLL_M400to500_TauTau.root",				
@@ -85,25 +103,50 @@ namespace DrellYanVariables
 	};
 	vector<TString> data_v2p6 = {
 		//Drell-Yan Data
-		"DoubleEG_RunB.root",					
-		"DoubleEG_RunC.root",					
-		"DoubleEG_RunD.root",					
-		"DoubleEG_RunE.root",					
-		"DoubleEG_RunF.root",					
-		"DoubleEG_RunG.root",					
-		"DoubleEG_RunHver2.root",				
-		"DoubleEG_RunHver3.root"				
+		"crab_DoubleEG_RunB.root",					
+		"crab_DoubleEG_RunC.root",					
+		"crab_DoubleEG_RunD.root",					
+		"crab_DoubleEG_RunE.root",					
+		"crab_DoubleEG_RunF.root",					
+		"crab_DoubleEG_RunG.root",					
+		"crab_DoubleEG_RunHver2.root",				
+		"crab_DoubleEG_RunHver3.root"				
 	};
 
-	int nFilesEE = dy_EE_v2p6.size();
-	int nFilesMuMu = dy_MuMu_v2p6.size();
-	int nFilesTops = tops_v2p6.size();
-	int nFilesFakes = fakes_v2p6.size();
-	int nFilesDibosons = dibosons_v2p6.size();
-	int nFilesTaus = taus_v2p6.size();
-	int nFilesData = data_v2p6.size();
+	//-----TEST-----//
+	TString base_directory_test = "root://xrootd-local.unl.edu///store/user/wtabb/DrellYan_13TeV_2016/v2p6/skims_testSkim/";
 
-	vector<double> ntuple_xsec_DY = {
+	vector<TString> dy_EE_test = {
+		//Drell-Yan MC signal
+		//Electrons
+		"DYLL_M10to50_EE.root",					
+		"DYLL_M50To100_EE.root",	
+		"DYLL_M100to200_EE.root",				
+		"DYLL_M200to400_EE.root",				
+		"DYLL_M400to500_EE.root",				
+		"DYLL_M500to700_EE.root",				
+		"DYLL_M700to800_EE.root",				
+		"DYLL_M800to1000_EE.root",				
+		"DYLL_M1000to1500_EE.root",				
+		"DYLL_M1500to2000_EE.root",				
+		"DYLL_M2000to3000_EE.root"				
+	};
+	vector<TString> dy_MuMu_test = {
+		//Muons
+		"DYLL_M10to50_MuMu.root",				
+		"DYLL_M50To100_MuMu.root",	
+		"DYLL_M100to200_MuMu.root",				
+		"DYLL_M200to400_MuMu.root",				
+		"DYLL_M400to500_MuMu.root",				
+		"DYLL_M500to700_MuMu.root",				
+		"DYLL_M700to800_MuMu.root",				
+		"DYLL_M800to1000_MuMu.root",				
+		"DYLL_M1000to1500_MuMu.root",				
+		"DYLL_M1500to2000_MuMu.root",				
+		"DYLL_M2000to3000_MuMu.root"				
+	};
+
+	vector<double> xSec_LL = {
 		18610.0*3,	//DYLL_10to50 v1,v2,ext1v1 combined (NLO)
 		1923.26*3,	//DYLL_50to100(NNLO)
 		78.1258*3,	//DYLL_100to200(NNLO)
@@ -137,8 +180,9 @@ namespace DrellYanVariables
 	const double ptHigh = 28;
 	const float dRMinCut = 0.3;
 	
-	TString electronTrigger = "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*";
-	TString muonTrigger = "";
+	const TString electronTrigger = "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*";
+	const TString muonTrigger1 = "HLT_IsoMu24_v*";
+	const TString muonTrigger2 = "HLT_IsoTkMu24_v*";
 
 	const int MPSIZE = 2000;
 	int nPileUp;
@@ -185,7 +229,7 @@ namespace DrellYanVariables
 	int GenOthers_isPromptFinalState[MPSIZE];
 
 	//Electron variables
-	double Nelectrons;
+	int Nelectrons;
 	double Electron_Energy[MPSIZE];  //no muon
 	double Electron_pT[MPSIZE];
 	double Electron_Px[MPSIZE];
@@ -233,7 +277,6 @@ namespace DrellYanVariables
 	int nVertices;
 
 	//-----Branches-----//
-
 	TBranch*b_runNum;
 	TBranch*b_evtNum;
 	TBranch*b_lumiBlock;
@@ -245,7 +288,6 @@ namespace DrellYanVariables
 	TBranch*b__prefiringweight;
 	TBranch*b__prefiringweightup;
 	TBranch*b__prefiringweightdown;
-
 	
 	//Trigger
 	TBranch*b_HLT_ntrig;
@@ -463,4 +505,217 @@ namespace DrellYanVariables
 		DoubleEG_RunHver2,				
 		DoubleEG_RunHver3				
 	};
+
+	//-----Histogram Parameters-----//
+	double massbins[] = {
+		15,
+		20,
+		25,
+		30,
+		35,
+		40,
+		45,
+		50,
+		55,
+		60,
+		64,
+		68,
+		72,
+		76,
+		81,
+		86,
+		91,
+		96,
+		101,
+		106,
+		110,
+		115,
+		120,
+		126,
+		133,
+		141,
+		150,
+		160,
+		171,
+		185,
+		200,
+		220,
+		243,
+		273,
+		320,
+		380,
+		440,
+		510,
+		600,
+		700,
+		830,
+		1000,
+		1500,
+		3000
+	};
+	int nMassBins = size(massbins)-1;//43;
+	double rapiditybins[] = {
+		-2.4,
+		-2.3,
+		-2.2,
+		-2.1,
+		-2.0,
+		-1.9,
+		-1.8,
+		-1.7,
+		-1.6,
+		-1.5,
+		-1.4,
+		-1.3,
+		-1.2,
+		-1.1,
+		-1.0,
+		-0.9,
+		-0.8,
+		-0.7,
+		-0.6,
+		-0.5,
+		-0.4,
+		-0.3,
+		-0.2,
+		-0.1,
+		0.0,
+		0.1,
+		0.2,
+		0.3,
+		0.4,
+		0.5,
+		0.6,
+		0.7,
+		0.8,
+		0.9,
+		1.0,
+		1.1,
+		1.2,
+		1.3,
+		1.4,
+		1.5,
+		1.6,
+		1.7,
+		1.8,
+		1.9,
+		2.0,
+		2.1,
+		2.2,
+		2.3,
+		2.4
+	};
+	int nRapidityBins = size(rapiditybins)-1;//49;
+
+	double ptbins[] = {
+		0,
+		5,
+		10,
+		15,
+		20,
+		25,
+		30,
+		35,
+		40,
+		45,
+		50,
+		55,
+		60,
+		65,
+		70,
+		75,
+		80,
+		85,
+		90,
+		95,
+		100,
+		105,
+		110,
+		115,
+		120,
+		125,
+		130,
+		135,
+		140,
+		145,
+		150,
+		155,
+		160,
+		165,
+		170,
+		175,
+		180,
+		185,
+		190,
+		195,
+		200,
+		205,
+		210,
+		215,
+		220,
+		225,
+		230,
+		235,
+		240,
+		245,
+		250,
+		255,
+		260,
+		265,
+		270,
+		275,
+		280,
+		285,
+		290,
+		295,
+		300,
+		305,
+		310,
+		315,
+		320,
+		325,
+		330,
+		335,
+		340,
+		345,
+		350,
+		355,
+		360,
+		365,
+		370,
+		375,
+		380,
+		385,
+		390,
+		395,
+		400,
+		405,
+		410,
+		415,
+		420,
+		425,
+		430,
+		435,
+		440,
+		445,
+		450,
+		455,
+		460,
+		465,
+		470,
+		475,
+		480,
+		485,
+		490,
+		495,
+		500,
+	};
+	int nPtBins = size(ptbins)-1;//100
+
+	vector<TString> _histTypes = {
+                "histInvMass",
+                "histRapidity",
+                "histPt"
+        };
+        int _nHistTypes = _histTypes.size();
 }
