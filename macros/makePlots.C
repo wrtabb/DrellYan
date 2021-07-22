@@ -39,6 +39,7 @@ void makePlots(LepType lepType)
 		saveNamePt += "_MuMu.png";
 	}
 	hMass->SetFillColor(kOrange-2);
+	hMass->SetMinimum(1e-1);
 	hRapidity->SetFillColor(kOrange-2);
 	hPt->SetFillColor(kOrange-2);
 

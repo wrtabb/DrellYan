@@ -31,9 +31,11 @@ class DrellYanAnalyzer
 		int _nSampleTypes;
 		DrellYanVariables::SampleType _sampleType;
 		DrellYanVariables::LepType _lepType;
+		DrellYanVariables::NtupleType _ntupType;
 
 		//Histogram definitions
 		vector<vector<TH1D*>> _hists;
+		TH1F*_hPileupRatio;
 	
 		//Tree definitions
 		vector<TChain*>_treeLL;
@@ -64,6 +66,12 @@ class DrellYanAnalyzer
 		double GetWeights(int index,int index2);
 		double GetGenWeightSum(int index,int index2);
 		double GetPUWeight();
+		double GetInvMass(double pt1,double eta1,double phi1,
+				  double pt2,double eta2,double phi2);
+		double GetRapidity(double pt1,double eta1,double phi1,
+				   double pt2,double eta2,double phi2);
+		double GetPt(double pt1,double eta1,double phi1,
+			     double pt2,double eta2,double phi2);
 		double CalcVariable(double pt1,double eta1,double phi1,double mass1,
 				    double pt2,double eta2,double phi2,double mass2,
 				    DrellYanVariables::VarType varType);
