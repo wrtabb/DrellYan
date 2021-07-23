@@ -9,15 +9,29 @@ enum LogType{
 
 TCanvas*MakeCanvas(TString cname,LogType logtype);
 
-void makePlots(LepType lepType)
+void makePlots(LepType lepType,SampleType sampleType)
 {
 	TFile*load_file;
 	TH1D*hMass;
 	TH1D*hRapidity;
 	TH1D*hPt;
-	TString saveNameMass = "plots/InvMass";
-	TString saveNameRapidity = "plots/Rapidity";
-	TString saveNamePt = "plots/Pt";
+	TString saveNameMass;
+	TString saveNameRapidity;
+	TString saveNamePt;
+	
+	if(sampleType==SAMPLE_LL){
+		saveNameMass = "plots/DYtoLL";
+		saveNameRapidity = "plots/DYtoLL";
+		saveNamePt = "plots/DYtoLL";
+	}
+	else if(sampleType==SAMPLE_TAU){
+		saveNameMass = "plots/TAU";
+		saveNameRapidity = "plots/TAU";
+		saveNamePt = "plots/TAU";
+	}
+	saveNameMass += "_InvMass";
+	saveNameRapidity = "_Rapidity";
+	saveNamePt = "_Pt";
 	if(lepType==ELE){
 		load_file = new TFile("data/DYHists_EE.root");
 		hMass = (TH1D*)load_file->Get("histInvMass_EE");

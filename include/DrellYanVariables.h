@@ -7,7 +7,8 @@ namespace DrellYanVariables
 	enum NtupleType{
 		V2P3,
 		V2P6,
-		TEST
+		TEST,
+		SINGLE_TEST
 	};
 	
 	//Lepton selection
@@ -144,6 +145,36 @@ namespace DrellYanVariables
 		"DYLL_M1000to1500_MuMu.root",				
 		"DYLL_M1500to2000_MuMu.root",				
 		"DYLL_M2000to3000_MuMu.root"				
+	};
+
+	vector<TString> dy_EE_SingleTest = {
+		//Drell-Yan MC signal
+		//Electrons
+		"DYLL_M10to50_EE.root",					
+	//	"DYLL_M50to100_EE.root",	
+	//	"DYLL_M100to200_EE.root",				
+	//	"DYLL_M200to400_EE.root",				
+	//	"DYLL_M400to500_EE.root",				
+	//	"DYLL_M500to700_EE.root",				
+	//	"DYLL_M700to800_EE.root",				
+	//	"DYLL_M800to1000_EE.root",				
+	//	"DYLL_M1000to1500_EE.root",				
+	//	"DYLL_M1500to2000_EE.root",				
+	//	"DYLL_M2000to3000_EE.root"				
+	};
+	vector<TString> dy_MuMu_SingleTest = {
+		//Muons
+		"DYLL_M10to50_MuMu.root",				
+	//	"DYLL_M50to100_MuMu.root",	
+	//	"DYLL_M100to200_MuMu.root",				
+	//	"DYLL_M200to400_MuMu.root",				
+	//	"DYLL_M400to500_MuMu.root",				
+	//	"DYLL_M500to700_MuMu.root",				
+	//	"DYLL_M700to800_MuMu.root",				
+	//	"DYLL_M800to1000_MuMu.root",				
+	//	"DYLL_M1000to1500_MuMu.root",				
+	//	"DYLL_M1500to2000_MuMu.root",				
+	//	"DYLL_M2000to3000_MuMu.root"				
 	};
 
 	vector<double> xSec_LL = {

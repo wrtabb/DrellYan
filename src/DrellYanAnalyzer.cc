@@ -52,6 +52,12 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 		else if(lepType==MUON) _files_LL = dy_MuMu_test;
 		_files.push_back(_files_LL);
 	}//end if ntupType
+	else if(ntupType==SINGLE_TEST){
+		_base_directory = base_directory_v2p6;
+		if(lepType==ELE) _files_LL = dy_EE_SingleTest;
+		else if(lepType==MUON) _files_LL = dy_MuMu_SingleTest;
+		_files.push_back(_files_LL);
+	}//end if ntupType
 	_nSampleTypes = _files.size();
 }//end function DrellYanAnalyzer()
 
@@ -248,6 +254,7 @@ double DrellYanAnalyzer::GetWeights(int index1,int index2)
 	//-----Cross section-----//
 	vector<double> xSec;
 	if(sampleType==SAMPLE_LL) xSec = xSec_LL;
+	else if(sampleType==SAMPLE_TAU) xSec = xSec_LL;
 	double xSecWeight = 1.0;
 	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
 	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec.at(index2)/nEntries;
@@ -323,6 +330,7 @@ int DrellYanAnalyzer::EventLoop()
 		Long64_t totalEvents = _nEvents;
 		bool isMC = true;
 		for(int j=0;j<nFiles;j++){//files within a sample (i.e. mass ranges)
+			cout << "Processing file: " << dy_EE_v2p6.at(j) << endl;
 			TBranch*testBranch = (TBranch*)_trees.at(i).at(j)->
 				GetListOfBranches()->FindObject("GENEvt_weight");
 			if(!testBranch) isMC = false; 
@@ -331,6 +339,7 @@ int DrellYanAnalyzer::EventLoop()
 			//cross section weights
 			vector<double> xSec;
                         if(sampleType==SAMPLE_LL) xSec = xSec_LL;
+                        else if(sampleType==SAMPLE_TAU) xSec = xSec_LL;
 			double xSecWeight = 1.0;
 			if(_ntupType==V2P6) 
 				xSecWeight = dataLuminosity*xSec.at(j)/1.0;
@@ -720,6 +729,8 @@ void DrellYanAnalyzer::SaveResults()
 {
 	using namespace DrellYanVariables;
 	TString filesave = "data/DYHists";
+	if(_ntupType==SINGLE_TEST) filesave += "_M10to50";
+
 	if(_lepType==ELE) filesave += "_EE.root";
 	else if(_lepType==MUON) filesave += "_MuMu.root";
 
