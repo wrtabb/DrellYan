@@ -60,7 +60,7 @@ class DrellYanAnalyzer
 		//loading data
 		int LoadTrees();
 		int InitializeBranches(TChain*chain,bool isMC);
-		void InitializeHistograms();
+		void InitializeHistograms(DrellYanVariables::ProcessType procType);
 
 		//calculations
 		double GetWeights(int index,int index2);

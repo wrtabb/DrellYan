@@ -194,7 +194,7 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 	return 1;
 }//end initializing trees
 
-void DrellYanAnalyzer::InitializeHistograms()
+void DrellYanAnalyzer::InitializeHistograms(DrellYanVariables::ProcessType procType)
 {
 	using namespace DrellYanVariables;
 	SampleType sampleType = _sampleType;
@@ -220,17 +220,30 @@ void DrellYanAnalyzer::InitializeHistograms()
 		sampleNames.push_back("_EGData");
 	}//end if SAMPLE_ALL
 
-	int nSamples = _nSampleTypes;
+	int nHistVars = 4*_nSampleTypes;
 	TString totalName;
 	vector<TH1D*> _histVars;
-	for(int i=0;i<nSamples;i++){
+	TString processTag;
+	if(procType==HARD) processTag = "HardProcess";
+	else if(procType==FSR) processTag = "FSR";
+	else if(procType==RECO) processTag = "Reco";
+	else if(procType==PRUNED) processTag = "Pruned";
+	else {
+		cout << "No process chosen!" << endl;
+		return;
+	}
+
+	for(int i=0;i<nHistVars;i++){
 		TString massName = "histInvMass";
+		massName += processTag;
 		massName += sampleNames.at(i);	
 		TH1D*hMass = new TH1D(massName,"",nMassBins,massbins);
 		TString rapidityName = "histRapidity";
+		rapidityName += processTag;
 		rapidityName += sampleNames.at(i);	
 		TH1D*hRapidity = new TH1D(rapidityName,"",nRapidityBins,rapiditybins);
 		TString ptName = "histPt";
+		ptName += processTag;
 		ptName += sampleNames.at(i);	
 		TH1D*hPt = new TH1D(ptName,"",nPtBins,ptbins);
 
@@ -312,7 +325,10 @@ int DrellYanAnalyzer::EventLoop()
 	LepType lepType = _lepType;
 	SampleType sampleType = _sampleType;
 
-	InitializeHistograms();
+	InitializeHistograms(HARD);
+	InitializeHistograms(FSR);
+	InitializeHistograms(RECO);
+	InitializeHistograms(PRUNED);
 	int iHard1,iHard2;
 	int iFSR1,iFSR2;
 	int iDressed1,iDressed2;
@@ -356,38 +372,50 @@ int DrellYanAnalyzer::EventLoop()
 
 			for(Long64_t iEntry=0;iEntry<nentries;iEntry++){
 				eventCount++;
+
+				//hard process variables
 				double hardPt1 =  -1000;
 				double hardPt2 =  -1000;
 				double hardEta1 = -1000;
 				double hardEta2 = -1000;
 				double hardPhi1 = -1000;
 				double hardPhi2 = -1000; 
+				double invMassHard =  -1000;
+				double rapidityHard = -1000;
+				double ptHard =       -1000;
 				
+				//FSR variables
 				double fsrPt1 =  -1000;
 				double fsrPt2 =  -1000;
 				double fsrEta1 = -1000;
 				double fsrEta2 = -1000;
 				double fsrPhi1 = -1000;
 				double fsrPhi2 = -1000; 
+				double invMassFSR =   -1000;
+				double rapidityFSR =  -1000;
+				double ptFSR =        -1000;
 
+				//Reco variables
 				double recoPt1 =  -1000;
 				double recoPt2 =  -1000;
 				double recoEta1 = -1000;
 				double recoEta2 = -1000;
 				double recoPhi1 = -1000;
 				double recoPhi2 = -1000; 
-
-				double invMassHard =  -1000;
-				double rapidityHard = -1000;
-				double ptHard =       -1000;
-
-				double invMassFSR =   -1000;
-				double rapidityFSR =  -1000;
-				double ptFSR =        -1000;
-
 				double invMassReco =  -1000;
 				double rapidityReco = -1000;
 				double ptReco =       -1000;
+
+				//Pruned variables
+				double prunedPt1 =  -1000;
+				double prunedPt2 =  -1000;
+				double prunedEta1 = -1000;
+				double prunedEta2 = -1000;
+				double prunedPhi1 = -1000;
+				double prunedPhi2 = -1000; 
+				double invMassPruned =  -1000;
+				double rapidityPruned = -1000;
+				double ptPruned =       -1000;
 
 				double var;	
 				_trees.at(i).at(j)->GetEntry(iEntry);
@@ -432,13 +460,6 @@ int DrellYanAnalyzer::EventLoop()
 						cout << "Lepton type not specified" << endl;
 						return 0;
 					}
-					//reco quantities
-					invMassReco = GetInvMass(recoPt1,recoEta1,recoPhi1,
-							       	 recoPt2,recoEta2,recoPhi2);
-					rapidityReco = GetRapidity(recoPt1,recoEta1,recoPhi1,
-								   recoPt2,recoEta2,recoPhi2);
-					ptReco = GetPt(recoPt1,recoEta1,recoPhi1,
-						       recoPt2,recoEta2,recoPhi2);
 
 					//hard process quantities
 					invMassHard = GetInvMass(hardPt1,hardEta1,hardPhi1,
@@ -456,12 +477,42 @@ int DrellYanAnalyzer::EventLoop()
 					ptFSR = GetPt(fsrPt1,fsrEta1,fsrPhi1,
 						      fsrPt2,fsrEta2,fsrPhi2);
 
+					//reco quantities
+					invMassReco = GetInvMass(recoPt1,recoEta1,recoPhi1,
+							       	 recoPt2,recoEta2,recoPhi2);
+					rapidityReco = GetRapidity(recoPt1,recoEta1,recoPhi1,
+								   recoPt2,recoEta2,recoPhi2);
+					ptReco = GetPt(recoPt1,recoEta1,recoPhi1,
+						       recoPt2,recoEta2,recoPhi2);
+
+					//Pruned quantities
+					invMassPruned = GetInvMass(prunedPt1,prunedEta1,
+								   prunedPhi1,prunedPt2,
+								   prunedEta2,prunedPhi2);
+					rapidityPruned = GetRapidity(prunedPt1,prunedEta1,
+								   prunedPhi1,prunedPt2,
+								   prunedEta2,prunedPhi2);
+					ptPruned = GetPt(prunedPt1,prunedEta1,
+						   	 prunedPhi1,prunedPt2,
+						         prunedEta2,prunedPhi2);
+
 					double weights = xSecWeight*genWeight*puWeight;
+					vector<double> var = {
+						invMassHard,
+						rapidityHard,
+						ptHard,
+						invMassFSR,
+						rapidityFSR,
+						ptFSR,
+						invMassReco,
+						rapidityReco,
+						ptReco,
+						invMassPruned,
+						rapidityPruned,
+						ptPruned
+					};
 					for(int k=0;k<nHists;k++){
-						if(k==0) var = invMassFSR;
-						else if(k==1) var = rapidityFSR;
-						else if(k==2) var = ptFSR;
-						_hists.at(i).at(k)->Fill(var,weights);
+						_hists.at(i).at(k)->Fill(var.at(k),weights);
 					}
 				}//end if nDileptons>0
 				Counter(eventCount,totalEvents);

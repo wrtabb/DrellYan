@@ -28,12 +28,22 @@ namespace DrellYanVariables
 		SAMPLE_DATA,
 		SAMPLE_ALL
 	};
+
 	//Variable Types for placing in histograms
 	enum VarType{
 		INV_MASS,
 		RAPIDITY,
 		PT
 	};
+	
+	//Process types
+	enum ProcessType{
+		HARD,
+		FSR,
+		RECO,
+		PRUNED
+	};
+
 	//-----V2.6-----//	
 	TString base_directory_v2p6 = "root://xrootd-local.unl.edu///store/user/wtabb/DrellYan_13TeV_2016/v2p6/skims/";
 
@@ -747,5 +757,5 @@ namespace DrellYanVariables
                 "histRapidity",
                 "histPt"
         };
-        int _nHistTypes = _histTypes.size();
+        int _nHistTypes = 4*_histTypes.size();
 }
