@@ -11,10 +11,11 @@ TCanvas*MakeCanvas(TString cname,LogType logtype);
 
 void makePlots(LepType lepType,SampleType sampleType)
 {
+	int nProcesses = 4;
 	TFile*load_file;
-	TH1D*hMass;
-	TH1D*hRapidity;
-	TH1D*hPt;
+	TH1D*hMass[nProcesses];
+	TH1D*hRapidity[nProcesses];
+	TH1D*hPt[nProcesses];
 	TString saveNameMass;
 	TString saveNameRapidity;
 	TString saveNamePt;
@@ -32,37 +33,73 @@ void makePlots(LepType lepType,SampleType sampleType)
 	saveNameMass += "_InvMass";
 	saveNameRapidity = "_Rapidity";
 	saveNamePt = "_Pt";
+
+	vector<TString> histTag = {
+		"HardProcess",
+		"FSR",
+		"Reco",
+		"Pruned"
+	};
+	int l;
+	int nHistTag = histTag.size();
 	if(lepType==ELE){
 		load_file = new TFile("data/DYHists_EE.root");
-		hMass = (TH1D*)load_file->Get("histInvMass_EE");
-		hRapidity = (TH1D*)load_file->Get("histRapidity_EE");
-		hPt = (TH1D*)load_file->Get("histPt_EE");
-		
+		for(int i=0;i<nProcesses;i++){
+			TString massLoad = "histInvMass_EE_DYtoLL";
+			massLoad += histTag.at(i);
+			TString rapLoad = "histRapidity_EE_DYtoLL";
+			rapLoad += histTag.at(i);
+			TString ptLoad = "histPt_EE_DYtoLL";
+			ptLoad += histTag.at(i);
+
+			hMass[i] = (TH1D*)load_file->Get(massLoad);
+			hRapidity[i] = (TH1D*)load_file->Get(rapLoad);
+			hPt[i] = (TH1D*)load_file->Get(ptLoad);
+		}	
 		saveNameMass += "_EE.png";
 		saveNameRapidity += "_EE.png";
 		saveNamePt += "_EE.png";
 	}
 	else if(lepType==MUON){
 		load_file = new TFile("data/DYHists_MuMu.root");
-		hMass = (TH1D*)load_file->Get("histInvMass_MuMu");
-		hRapidity = (TH1D*)load_file->Get("histRapidity_MuMu");
-		hPt = (TH1D*)load_file->Get("histPt_MuMu");
+		for(int i=0;i<nProcesses;i++){
+			TString massLoad = "histInvMass_MuMu_DYtoLL";
+			massLoad += histTag.at(i);
+			TString rapLoad = "histRapidity_MuMu_DYtoLL";
+			rapLoad += histTag.at(i);
+			TString ptLoad = "histPt_MuMu_DYtoLL";
+			ptLoad += histTag.at(i);
+
+			hMass[i] = (TH1D*)load_file->Get(massLoad);
+			hRapidity[i] = (TH1D*)load_file->Get(rapLoad);
+			hPt[i] = (TH1D*)load_file->Get(ptLoad);
+		}	
 
 		saveNameMass += "_MuMu.png";
 		saveNameRapidity += "_MuMu.png";
 		saveNamePt += "_MuMu.png";
 	}
-	hMass->SetFillColor(kOrange-2);
-	hMass->SetMinimum(1e-1);
-	hRapidity->SetFillColor(kOrange-2);
-	hPt->SetFillColor(kOrange-2);
+
+	for(int i=0;i<nProcesses;i++){
+		hMass[i]->SetFillColor(kOrange-2);
+		hMass[i]->SetMinimum(1e-1);
+		hRapidity[i]->SetFillColor(kOrange-2);
+		hPt[i]->SetFillColor(kOrange-2);
+	}
 
 	TCanvas*cMass = MakeCanvas("InvMass",LOG_BOTH);
-	hMass->Draw("hist"); 
 	TCanvas*cRapidity = MakeCanvas("Rapidity",LOG_Y);
-	hRapidity->Draw("hist"); 
 	TCanvas*cPt = MakeCanvas("Pt",LOG_Y);
-	hPt->Draw("hist"); 
+	for(int i=0;i<nProcesses;i++){
+		cMass->cd(i);
+		hMass[i]->Draw("hist");
+
+		cRapidity->cd(i);
+		hRapidity[i]->Draw("hist");
+		
+		cPt->cd(i);
+		hPt[i]->Draw("hist");
+	}
 
 	cMass->SaveAs(saveNameMass);
 	cRapidity->SaveAs(saveNameRapidity);
@@ -72,7 +109,7 @@ void makePlots(LepType lepType,SampleType sampleType)
 TCanvas*MakeCanvas(TString cname,LogType logtype)
 {
 	TCanvas*canvas = new TCanvas(cname,"",0,0,1000,1000);
-	canvas->SetGrid();
+	canvas->Divide(2,2);
 	if(logtype==LOG_X)canvas->SetLogx();
 	else if(logtype==LOG_Y)canvas->SetLogy();
 	else if(logtype==LOG_BOTH){

@@ -194,66 +194,74 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 	return 1;
 }//end initializing trees
 
-void DrellYanAnalyzer::InitializeHistograms(DrellYanVariables::ProcessType procType)
+void DrellYanAnalyzer::InitializeHistograms()
 {
 	using namespace DrellYanVariables;
-	SampleType sampleType = _sampleType;
-	LepType lepType = _lepType;
-	vector<TString> histTypes = _histTypes;
-	int nHistTypes = _nHistTypes;
-	vector<TString> sampleNames;
+	SampleType sampleType = _sampleType; //type of sample being processed
+	LepType lepType = _lepType; //type of lepton
+	int nSamples = _nSampleTypes; //number of samples being processed
+	int nVars = 3; //number of variables to plot (mass, rapidity, pt, ...)
+	int nProcs = 4;
+	TString lepTag;
+	vector<TString> sampleTag;
 
-	if(sampleType==SAMPLE_LL && lepType==ELE) sampleNames.push_back("_EE");
-	if(sampleType==SAMPLE_LL && lepType==MUON) sampleNames.push_back("_MuMu");
-	else if(sampleType==SAMPLE_TOP) sampleNames.push_back("_Tops");
-	else if(sampleType==SAMPLE_FAKE) sampleNames.push_back("_Fakes");
-	else if(sampleType==SAMPLE_DIBOSON) sampleNames.push_back("Dibosons");
-	else if(sampleType==SAMPLE_TAU)	sampleNames.push_back("_TauTau");
-	else if(sampleType==SAMPLE_DATA) sampleNames.push_back("_EGData");
+	if(sampleType==SAMPLE_LL) sampleTag.push_back("DYtoLL");
+	else if(sampleType==SAMPLE_TOP) sampleTag.push_back("Tops");
+	else if(sampleType==SAMPLE_FAKE) sampleTag.push_back("Fakes");
+	else if(sampleType==SAMPLE_DIBOSON) sampleTag.push_back("Dibosons");
+	else if(sampleType==SAMPLE_TAU) sampleTag.push_back("Taus");
+	else if(sampleType==SAMPLE_DATA) sampleTag.push_back("Data");
 	else if(sampleType==SAMPLE_ALL){
-		if(lepType==ELE) sampleNames.push_back("_EE");
-		else if(lepType==MUON) sampleNames.push_back("_MuMu");
-		sampleNames.push_back("_Tops");
-		sampleNames.push_back("_Fakes");
-		sampleNames.push_back("Dibosons");
-		sampleNames.push_back("_TauTau");
-		sampleNames.push_back("_EGData");
-	}//end if SAMPLE_ALL
-
-	int nHistVars = 4*_nSampleTypes;
-	TString totalName;
-	vector<TH1D*> _histVars;
-	TString processTag;
-	if(procType==HARD) processTag = "HardProcess";
-	else if(procType==FSR) processTag = "FSR";
-	else if(procType==RECO) processTag = "Reco";
-	else if(procType==PRUNED) processTag = "Pruned";
+		sampleTag.push_back("DYtoLL");
+		sampleTag.push_back("Tops");
+		sampleTag.push_back("Fakes");
+		sampleTag.push_back("Dibosons");
+		sampleTag.push_back("Taus");
+		sampleTag.push_back("Data");
+	}
 	else {
-		cout << "No process chosen!" << endl;
+		cout << "**********************************" << endl;
+		cout << "ERROR in InitializeHistograms()!!!" << endl;	
+		cout << "Sample type not properly defined" << endl;
 		return;
 	}
 
-	for(int i=0;i<nHistVars;i++){
-		TString massName = "histInvMass";
-		massName += processTag;
-		massName += sampleNames.at(i);	
-		TH1D*hMass = new TH1D(massName,"",nMassBins,massbins);
-		TString rapidityName = "histRapidity";
-		rapidityName += processTag;
-		rapidityName += sampleNames.at(i);	
-		TH1D*hRapidity = new TH1D(rapidityName,"",nRapidityBins,rapiditybins);
-		TString ptName = "histPt";
-		ptName += processTag;
-		ptName += sampleNames.at(i);	
-		TH1D*hPt = new TH1D(ptName,"",nPtBins,ptbins);
+	if(lepType==ELE) lepTag = "_EE_";
+	else lepTag = "_MuMu_";
 
-		_histVars.push_back(hMass);
-		_histVars.push_back(hRapidity);
-		_histVars.push_back(hPt);
-	
-		_hists.push_back(_histVars);
-	}//end loop over sample types
-	
+	vector<TString> varName = {
+		"InvMass",
+		"Rapidity",
+		"Pt"
+	};
+
+	vector<TString> procTag = {
+		"HardProcess",
+		"FSR",
+		"Reco",
+		"Pruned"
+	};
+
+	_nHists = nSamples*nVars*nProcs;
+	TH1D*hist[nSamples][nVars][nProcs];
+	for(int i=0;i<nSamples;i++){
+		for(int j=0;j<nVars;j++){
+			for(int k=0;k<nProcs;k++){
+				TString hName = "hist";
+				hName += varName.at(j);
+				hName += lepTag;
+				hName += sampleTag.at(i);  
+				hName += procTag.at(k);
+				if(j==0)hist[i][j][k] = 
+					new TH1D(hName,"",nMassBins,massbins);
+				if(j==1)hist[i][j][k] = 
+					new TH1D(hName,"",nRapidityBins,rapiditybins);
+				if(j==2)hist[i][j][k] = 
+					new TH1D(hName,"",nPtBins,ptbins);
+				_hists.push_back(hist[i][j][k]);
+			}//end loop over processes
+		}//end loop over variables
+	}//end loop over samples
 }//end InitializeHistograms
 
 /////////////////////////
@@ -321,14 +329,10 @@ double DrellYanAnalyzer::GetPUWeight()
 int DrellYanAnalyzer::EventLoop()
 {
 	using namespace DrellYanVariables;
-	int nHists = _nHistTypes;
 	LepType lepType = _lepType;
 	SampleType sampleType = _sampleType;
 
-	InitializeHistograms(HARD);
-	InitializeHistograms(FSR);
-	InitializeHistograms(RECO);
-	InitializeHistograms(PRUNED);
+	InitializeHistograms();
 	int iHard1,iHard2;
 	int iFSR1,iFSR2;
 	int iDressed1,iDressed2;
@@ -439,6 +443,17 @@ int DrellYanAnalyzer::EventLoop()
 					fsrPt2  = GENLepton_pT[iFSR2];
 					fsrEta2 = GENLepton_eta[iFSR2];
 					fsrPhi2 = GENLepton_phi[iFSR2];
+
+					//This is temporary
+					//Still need to write a function
+					//To calculate pruned leptons
+					prunedPt1  = GENLepton_pT[iHard1];
+					prunedEta1 = GENLepton_eta[iHard1];
+					prunedPhi1 = GENLepton_phi[iHard1];
+					prunedPt2  = GENLepton_pT[iHard2];
+					prunedEta2 = GENLepton_eta[iHard2];
+					prunedPhi2 = GENLepton_phi[iHard2];
+
 					if(lepType==ELE){
 						recoPt1  = Electron_pT[iLep1];
 						recoEta1 = Electron_eta[iLep1];
@@ -499,20 +514,24 @@ int DrellYanAnalyzer::EventLoop()
 					double weights = xSecWeight*genWeight*puWeight;
 					vector<double> var = {
 						invMassHard,
-						rapidityHard,
-						ptHard,
 						invMassFSR,
-						rapidityFSR,
-						ptFSR,
 						invMassReco,
-						rapidityReco,
-						ptReco,
 						invMassPruned,
+						rapidityHard,
+						rapidityFSR,
+						rapidityReco,
 						rapidityPruned,
+						ptHard,
+						ptFSR,
+						ptReco,
 						ptPruned
 					};
-					for(int k=0;k<nHists;k++){
-						_hists.at(i).at(k)->Fill(var.at(k),weights);
+					int varSize = var.size();
+					int l=0;
+					for(int k=0;k<_nHists;k++){
+						_hists.at(k)->Fill(var.at(l),weights);
+						l++;
+						if(l>varSize) l=0;
 					}
 				}//end if nDileptons>0
 				Counter(eventCount,totalEvents);
@@ -786,11 +805,8 @@ void DrellYanAnalyzer::SaveResults()
 	else if(_lepType==MUON) filesave += "_MuMu.root";
 
 	TFile*file = new TFile(filesave,"recreate");
-	for(int i=0;i<_nSampleTypes;i++){
-		int nFiles = _files.at(i).size();
-		for(int j=0;j<_nHistTypes;j++){
-			_hists.at(i).at(j)->Write();
-		}
+	for(int i=0;i<_nHists;i++){
+		_hists.at(i)->Write();
 	}
 	file->Write();
 	file->Close();

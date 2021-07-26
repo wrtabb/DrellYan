@@ -34,7 +34,8 @@ class DrellYanAnalyzer
 		DrellYanVariables::NtupleType _ntupType;
 
 		//Histogram definitions
-		vector<vector<TH1D*>> _hists;
+		vector<TH1D*> _hists;
+		int _nHists;
 		TH1F*_hPileupRatio;
 	
 		//Tree definitions
@@ -60,7 +61,7 @@ class DrellYanAnalyzer
 		//loading data
 		int LoadTrees();
 		int InitializeBranches(TChain*chain,bool isMC);
-		void InitializeHistograms(DrellYanVariables::ProcessType procType);
+		void InitializeHistograms();
 
 		//calculations
 		double GetWeights(int index,int index2);

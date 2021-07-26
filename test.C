@@ -6,8 +6,8 @@ void RunLoop(NtupleType ntupType,SampleType sampleType,LepType lepType);
 
 void test()
 {
-	RunLoop(TEST,SAMPLE_TAU,ELE);
-	RunLoop(TEST,SAMPLE_TAU,MUON);
+	RunLoop(TEST,SAMPLE_LL,ELE);
+	RunLoop(TEST,SAMPLE_LL,MUON);
 }
 
 void RunLoop(NtupleType ntupType,SampleType sampleType,LepType lepType)
