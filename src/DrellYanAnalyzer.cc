@@ -361,17 +361,22 @@ int DrellYanAnalyzer::EventLoop()
                         if(sampleType==SAMPLE_LL) xSec = xSec_LL;
                         else if(sampleType==SAMPLE_TAU) xSec = xSec_LL;
 			double xSecWeight = 1.0;
-			if(_ntupType==V2P6) 
-				xSecWeight = dataLuminosity*xSec.at(j)/1.0;
-			else if(_ntupType==TEST) 
+			if(_ntupType==TEST) 
 				xSecWeight = dataLuminosity*xSec.at(j)/nentries;
+			else xSecWeight = dataLuminosity*xSec.at(j)/1.0;
 
 			//Gen weights
 			double genWeight = 1.0;
 			double sumGenWeight = 1.0;
-			if(_ntupType==V2P6 && isMC){ 
+			double genEvtWeight;
+			double absGenEvtWeight;
+			double evtWeightRatio;
+			if(_ntupType!=TEST && isMC){ 
 				sumGenWeight = GetGenWeightSum(i,j);
-				genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;  
+				genEvtWeight = GENEvt_weight;
+				absGenEvtWeight = fabs(GENEvt_weight);
+				evtWeightRatio = genEvtWeight/absGenEvtWeight;
+				genWeight = evtWeightRatio/sumGenWeight;  
 			}
 
 			for(Long64_t iEntry=0;iEntry<nentries;iEntry++){
@@ -424,11 +429,10 @@ int DrellYanAnalyzer::EventLoop()
 				double var;	
 				_trees.at(i).at(j)->GetEntry(iEntry);
 				double puWeight = GetPUWeight();
-				int nDileptonsGen = 
-					DrellYanAnalyzer::GetGenLeptons(iHard1,iHard2,
-					  	  		        iFSR1,iFSR2);
-				int nDileptonsReco = 
-					DrellYanAnalyzer::GetRecoLeptons(iLep1,iLep2);
+				int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
+					  	          	  iFSR1,iFSR2);
+				int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
+
 				if(nDileptonsGen>0 && nDileptonsReco>0){
 					hardPt1  = GENLepton_pT[iHard1];
 					hardEta1 = GENLepton_eta[iHard1];
@@ -695,14 +699,6 @@ bool DrellYanAnalyzer::PassHLT()
 	LepType lepType = _lepType;
 	TString trigName;
 	TString triggerUsed;
-	if(lepType==ELE) triggerUsed = electronTrigger;
-	else if(lepType==MUON) triggerUsed = muonTrigger1;
-	else {
-		cout << "Error in DrellYanAnalyzer::PassHLT()" << endl;
-		cout << "lepType does not exist" << endl;
-		cout << "Must choose 'ELE' or 'MUON'" << endl;
-		return false;
-	}
 	int trigNameSize = pHLT_trigName->size();
 	bool passHLT = false;
 	for(int iHLT=0;iHLT<trigNameSize;iHLT++) {
@@ -715,7 +711,7 @@ bool DrellYanAnalyzer::PassHLT()
 		}//end if lepType
 		else if(lepType==MUON){
 			if((trigName.CompareTo(muonTrigger1)==0 || 
-			    trigName.CompareTo(muonTrigger1)==0 ) && 
+			    trigName.CompareTo(muonTrigger2)==0 ) && 
 			    HLT_trigFired[iHLT]==1){
 				passHLT = true;
 				break;
@@ -744,7 +740,7 @@ bool DrellYanAnalyzer::PassGenToRecoMatchEle(int genIndex,int &recoIndex)
 	using namespace DrellYanVariables;
 	LepType lepType = _lepType;
 	double dR,deta,dphi;
-	double pi = 3.1415926;
+	double pi = 3.14159;
 	float dRMin = 100000;
 	recoIndex=-1;
 	for(int iLep=0;iLep<Nelectrons;iLep++){
@@ -770,7 +766,7 @@ bool DrellYanAnalyzer::PassGenToRecoMatchMu(int genIndex,int &recoIndex)
 {
 	using namespace DrellYanVariables;
 	double dR,deta,dphi;
-	double pi = 3.1415926;
+	double pi = 3.14159;
 	float dRMin = 100000;
 	recoIndex=-1;
 	for(int iLep=0;iLep<Nmuons;iLep++){
@@ -806,11 +802,27 @@ void DrellYanAnalyzer::SaveResults()
 	else{
 		cout << "********************************************************" << endl;
 		cout << "ERROR in SaveResults()" << endl;
-		cout << "ntupType not correctly defined" << endl;
+		cout << "NtupleType not correctly defined" << endl;
 		cout << "See include/DrellYanVariables.h for list of NtupleTypes" << endl;
 		cout << "********************************************************" << endl;
 		return;
 	}
+
+	if(_sampleType==SAMPLE_LL) filesave += "_DYtoLL";
+	else if(_sampleType==SAMPLE_TOP) filesave += "_TT";
+	else if(_sampleType==SAMPLE_FAKE) filesave += "_Fakes";
+	else if (_sampleType==SAMPLE_DIBOSON) filesave += "_Diboson";
+	else if (_sampleType==SAMPLE_TAU) filesave += "_TauTau";
+	else if (_sampleType==SAMPLE_DATA) filesave += "_Data";
+	else if (_sampleType==SAMPLE_ALL) filesave += "_All";
+	else {
+		cout << "*****************************************************" << endl;
+		cout << "ERROR in SaveResults() " << endl;	
+		cout << "SampleType not correctly defined" << endl;
+		cout << "See include/DrellYanVariables.h for list of SampleTypes" << endl;
+		cout << "*****************************************************" << endl;
+	}
+
 
 	if(_lepType==ELE) filesave += "_EE.root";
 	else if(_lepType==MUON) filesave += "_MuMu.root";
