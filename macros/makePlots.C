@@ -31,8 +31,8 @@ void makePlots(LepType lepType,SampleType sampleType)
 		saveNamePt = "plots/TAU";
 	}
 	saveNameMass += "_InvMass";
-	saveNameRapidity = "_Rapidity";
-	saveNamePt = "_Pt";
+	saveNameRapidity += "_Rapidity";
+	saveNamePt += "_Pt";
 
 	vector<TString> histTag = {
 		"HardProcess",

@@ -799,7 +799,18 @@ void DrellYanAnalyzer::SaveResults()
 {
 	using namespace DrellYanVariables;
 	TString filesave = "data/DYHists";
-	if(_ntupType==SINGLE_TEST) filesave += "_M10to50";
+	if(_ntupType==V2P6) filesave+= "_v2p6";
+	else if (_ntupType==V2P3) filesave+= "_v2p3";
+	else if(_ntupType==TEST) filesave += "_TEST";
+	else if(_ntupType==SINGLE_TEST) filesave += "_SingleSampleTest";
+	else{
+		cout << "********************************************************" << endl;
+		cout << "ERROR in SaveResults()" << endl;
+		cout << "ntupType not correctly defined" << endl;
+		cout << "See include/DrellYanVariables.h for list of NtupleTypes" << endl;
+		cout << "********************************************************" << endl;
+		return;
+	}
 
 	if(_lepType==ELE) filesave += "_EE.root";
 	else if(_lepType==MUON) filesave += "_MuMu.root";
