@@ -1,0 +1,9 @@
+#!/bin/bash
+
+root -l << EOF
+.L test.C
+test();
+.L macros/makePlots.C
+makePlots(ELE,SAMPLE_LL,TEST)
+makePlots(MUON,SAMPLE_LL,TEST)
+EOF
