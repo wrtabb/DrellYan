@@ -165,6 +165,19 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 		chain->SetBranchAddress("Muon_phi",&Muon_phi,&b_Muon_phi);
 		chain->SetBranchAddress("Muon_passTightID",&Muon_passTightID,
 					&b_Muon_passTightID);
+		chain->SetBranchAddress("Muon_charge",&Muon_charge,&b_Muon_charge);
+		chain->SetBranchAddress("Muon_PfChargedHadronIsoR04",
+					&Muon_PfChargedHadronIsoR04,
+					&b_Muon_PfChargedHadronIsoR04);
+		chain->SetBranchAddress("Muon_PfNeutralHadronIsoR04",
+					&Muon_PfNeutralHadronIsoR04,
+					&b_Muon_PfNeutralHadronIsoR04);
+		chain->SetBranchAddress("Muon_PfGammaIsoR04",
+					&Muon_PfGammaIsoR04,
+					&b_Muon_PfGammaIsoR04);
+		chain->SetBranchAddress("Muon_PFSumPUIsoR04",
+					&Muon_PFSumPUIsoR04,
+					&b_Muon_PFSumPUIsoR04);
 	}
 	//Trigger
 	chain->SetBranchAddress("HLT_ntrig",&HLT_ntrig,&b_HLT_ntrig);
@@ -356,13 +369,15 @@ int DrellYanAnalyzer::EventLoop()
 		cout << "Error in EventLoop(): Need to specify ELE or MUON" << endl;
 		 return 0;
 	}
+	//Loop over all samples, i.e. DYtoLL, Fakes, data, etc.
 	for(int i=0;i<_nSampleTypes;i++){
 		int nFiles = _trees.at(i).size();
 		Long64_t totalEvents = _nEvents;
 		bool isMC = true;
 		vector<TString> fileList;
 		if(_sampleType==SAMPLE_LL) fileList = _files_LL; 
-		for(int j=0;j<nFiles;j++){//files within a sample (i.e. mass ranges)
+		//Loop over files within a sample
+		for(int j=0;j<nFiles;j++){
 			cout << "Processing file: " << fileList.at(j) << endl;
 			TBranch*testBranch = (TBranch*)_trees.at(i).at(j)->
 				GetListOfBranches()->FindObject("GENEvt_weight");
@@ -392,54 +407,54 @@ int DrellYanAnalyzer::EventLoop()
 				genWeight = evtWeightRatio/sumGenWeight;  
 			}
 
+			//Loop over all events in the loaded tree
 			for(Long64_t iEntry=0;iEntry<nentries;iEntry++){
 				eventCount++;
 
 				//hard process variables
-				double hardPt1 =  -1000;
-				double hardPt2 =  -1000;
-				double hardEta1 = -1000;
-				double hardEta2 = -1000;
-				double hardPhi1 = -1000;
-				double hardPhi2 = -1000; 
-				double invMassHard =  -1000;
-				double rapidityHard = -1000;
-				double ptHard =       -1000;
+				double hardPt1 		= -1000;
+				double hardPt2 		= -1000;
+				double hardEta1 	= -1000;
+				double hardEta2 	= -1000;
+				double hardPhi1 	= -1000;
+				double hardPhi2 	= -1000; 
+				double invMassHard 	= -1000;
+				double rapidityHard 	= -1000;
+				double ptHard 		= -1000;
 				
 				//FSR variables
-				double fsrPt1 =  -1000;
-				double fsrPt2 =  -1000;
-				double fsrEta1 = -1000;
-				double fsrEta2 = -1000;
-				double fsrPhi1 = -1000;
-				double fsrPhi2 = -1000; 
-				double invMassFSR =   -1000;
-				double rapidityFSR =  -1000;
-				double ptFSR =        -1000;
+				double fsrPt1 		= -1000;
+				double fsrPt2 		= -1000;
+				double fsrEta1 		= -1000;
+				double fsrEta2 		= -1000;
+				double fsrPhi1 		= -1000;
+				double fsrPhi2 		= -1000; 
+				double invMassFSR 	= -1000;
+				double rapidityFSR 	= -1000;
+				double ptFSR 		= -1000;
 
 				//Reco variables
-				double recoPt1 =  -1000;
-				double recoPt2 =  -1000;
-				double recoEta1 = -1000;
-				double recoEta2 = -1000;
-				double recoPhi1 = -1000;
-				double recoPhi2 = -1000; 
-				double invMassReco =  -1000;
-				double rapidityReco = -1000;
-				double ptReco =       -1000;
+				double recoPt1 		= -1000;
+				double recoPt2 		= -1000;
+				double recoEta1 	= -1000;
+				double recoEta2 	= -1000;
+				double recoPhi1 	= -1000;
+				double recoPhi2 	= -1000; 
+				double invMassReco 	= -1000;
+				double rapidityReco 	= -1000;
+				double ptReco 		= -1000;
 
 				//Pruned variables
-				double prunedPt1 =  -1000;
-				double prunedPt2 =  -1000;
-				double prunedEta1 = -1000;
-				double prunedEta2 = -1000;
-				double prunedPhi1 = -1000;
-				double prunedPhi2 = -1000; 
-				double invMassPruned =  -1000;
-				double rapidityPruned = -1000;
-				double ptPruned =       -1000;
+				double prunedPt1 	= -1000;
+				double prunedPt2 	= -1000;
+				double prunedEta1 	= -1000;
+				double prunedEta2 	= -1000;
+				double prunedPhi1 	= -1000;
+				double prunedPhi2 	= -1000; 
+				double invMassPruned 	= -1000;
+				double rapidityPruned 	= -1000;
+				double ptPruned 	= -1000;
 
-				double var;	
 				_trees.at(i).at(j)->GetEntry(iEntry);
 				double puWeight = GetPUWeight();
 				int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
@@ -527,30 +542,30 @@ int DrellYanAnalyzer::EventLoop()
 					ptPruned = GetPt(prunedPt1,prunedEta1,
 						   	 prunedPhi1,prunedPt2,
 						         prunedEta2,prunedPhi2);
-
-					double weights = xSecWeight*genWeight*puWeight;
-					vector<double> var = {
-						invMassHard,
-						invMassFSR,
-						invMassReco,
-						invMassPruned,
-						rapidityHard,
-						rapidityFSR,
-						rapidityReco,
-						rapidityPruned,
-						ptHard,
-						ptFSR,
-						ptReco,
-						ptPruned
-					};
-					int varSize = var.size();
-					int l=0;
-					for(int k=0;k<_nHists;k++){
-						_hists.at(k)->Fill(var.at(l),weights);
-						l++;
-						if(l>varSize) l=0;
-					}
 				}//end if nDileptons>0
+
+				double weights = xSecWeight*genWeight*puWeight;
+				vector<double> var = {
+					invMassHard,
+					invMassFSR,
+					invMassReco,
+					invMassPruned,
+					rapidityHard,
+					rapidityFSR,
+					rapidityReco,
+					rapidityPruned,
+					ptHard,
+					ptFSR,
+					ptReco,
+					ptPruned
+				};
+				int varSize = var.size();
+				int l=0;
+				for(int k=0;k<_nHists;k++){
+					_hists.at(k)->Fill(var.at(l),weights);
+					l++;
+					if(l>varSize) l=0;
+				}
 				Counter(eventCount,totalEvents);
 			}//end event loop
 		}//end loop over files

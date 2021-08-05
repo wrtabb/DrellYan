@@ -287,7 +287,7 @@ namespace DrellYanVariables
 	double Electron_EnergySC[MPSIZE]; //no muon
 	double Electron_etSC[MPSIZE]; //no muon
 	bool Electron_passMediumID[MPSIZE];
-	double eMass = 0.000511;
+	double eMass = 0.000510998;
 
 	//Muon variables
 	int nMuon;
@@ -302,12 +302,13 @@ namespace DrellYanVariables
 	double Muon_dxy[MPSIZE];
 	double Muon_dz[MPSIZE];
 	bool Muon_passTightID[MPSIZE];
+
 	double Muon_PfChargedHadronIsoR04[MPSIZE];
 	double Muon_PfNeutralHadronIsoR04[MPSIZE];
 	double Muon_PfGammaIsoR04[MPSIZE];
 	double Muon_PFSumPUIsoR04[MPSIZE];
 	double Muon_trkiso[MPSIZE];
-	double muMass = 0.105658;
+	double muMass = 0.1056583715;
 
 	//HLT variables
 	int HLT_ntrig;
