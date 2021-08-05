@@ -12,7 +12,6 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_ntupType = ntupType;
 	TFile*puFile = new TFile("data/pileup.root");
         _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
-
 	if(ntupType==V2P6){
 		_base_directory = base_directory_v2p6;
 		if(lepType==ELE) _files_LL = dy_EE_v2p6;
@@ -24,12 +23,24 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 		_files_taus = taus_v2p6;
 		_files_data = data_v2p6;
 
-		if(sampleType==SAMPLE_LL) _files.push_back(_files_LL);
-		else if(sampleType==SAMPLE_TOP) _files.push_back(_files_tops);
-		else if(sampleType==SAMPLE_FAKE) _files.push_back(_files_fakes);
-		else if(sampleType==SAMPLE_DIBOSON) _files.push_back(_files_dibosons);
-		else if(sampleType==SAMPLE_TAU) _files.push_back(_files_taus);
-		else if(sampleType==SAMPLE_DATA) _files.push_back(_files_data);
+		if(sampleType==SAMPLE_LL){
+		       	_files.push_back(_files_LL);
+		}
+		else if(sampleType==SAMPLE_TOP){
+		       	_files.push_back(_files_tops);
+		}
+		else if(sampleType==SAMPLE_FAKE){ 
+			_files.push_back(_files_fakes);
+		}
+		else if(sampleType==SAMPLE_DIBOSON){
+		       	_files.push_back(_files_dibosons);
+		}
+		else if(sampleType==SAMPLE_TAU){
+		       	_files.push_back(_files_taus);
+		}
+		else if(sampleType==SAMPLE_DATA){
+		       	_files.push_back(_files_data);
+		}
 		else if(sampleType==SAMPLE_ALL){
 			_files.push_back(_files_LL);
 			_files.push_back(_files_tops);
@@ -349,8 +360,10 @@ int DrellYanAnalyzer::EventLoop()
 		int nFiles = _trees.at(i).size();
 		Long64_t totalEvents = _nEvents;
 		bool isMC = true;
+		vector<TString> fileList;
+		if(_sampleType==SAMPLE_LL) fileList = _files_LL; 
 		for(int j=0;j<nFiles;j++){//files within a sample (i.e. mass ranges)
-			cout << "Processing file: " << dy_EE_v2p6.at(j) << endl;
+			cout << "Processing file: " << fileList.at(j) << endl;
 			TBranch*testBranch = (TBranch*)_trees.at(i).at(j)->
 				GetListOfBranches()->FindObject("GENEvt_weight");
 			if(!testBranch) isMC = false; 
