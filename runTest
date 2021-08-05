@@ -2,9 +2,9 @@
 
 root -l << EOF
 .L test.C
-test(ELE,SAMPLE_LL,TEST);
-test(MUON,SAMPLE_LL,TEST);
+test(ELE,SAMPLE_LL,V2P6);
+test(MUON,SAMPLE_LL,V2P6);
 .L macros/makePlots.C
-makePlots(ELE,SAMPLE_LL,TEST)
-makePlots(MUON,SAMPLE_LL,TEST)
+makePlots(ELE,SAMPLE_LL,V2P6)
+makePlots(MUON,SAMPLE_LL,V2P6)
 EOF

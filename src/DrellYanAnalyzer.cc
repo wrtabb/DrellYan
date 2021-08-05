@@ -159,7 +159,6 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 	if(lepType!=ELE){
 	//Muons
 		chain->SetBranchAddress("nMuon",&nMuon,&b_nMuon);
-		chain->SetBranchAddress("Nmuons",&Nmuons,&b_Nmuons);
 		chain->SetBranchAddress("Muon_pT",&Muon_pT,&b_Muon_pT);
 		chain->SetBranchAddress("Muon_eta",&Muon_eta,&b_Muon_eta);
 		chain->SetBranchAddress("Muon_phi",&Muon_phi,&b_Muon_phi);
@@ -461,7 +460,7 @@ int DrellYanAnalyzer::EventLoop()
 					  	          	  iFSR1,iFSR2);
 				int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
 
-				if(nDileptonsGen>0 && nDileptonsReco>0){
+				if(nDileptonsGen==1 && nDileptonsReco==1){
 					hardPt1  = GENLepton_pT[iHard1];
 					hardEta1 = GENLepton_eta[iHard1];
 					hardPhi1 = GENLepton_phi[iHard1];
@@ -543,7 +542,7 @@ int DrellYanAnalyzer::EventLoop()
 						   	 prunedPhi1,prunedPt2,
 						         prunedEta2,prunedPhi2);
 				}//end if nDileptons>0
-
+			
 				double weights = xSecWeight*genWeight*puWeight;
 				vector<double> var = {
 					invMassHard,
@@ -561,11 +560,13 @@ int DrellYanAnalyzer::EventLoop()
 				};
 				int varSize = var.size();
 				int l=0;
+
+				//Loop over histograms
 				for(int k=0;k<_nHists;k++){
 					_hists.at(k)->Fill(var.at(l),weights);
 					l++;
 					if(l>varSize) l=0;
-				}
+				}//end loop over histograms
 				Counter(eventCount,totalEvents);
 			}//end event loop
 		}//end loop over files
@@ -673,10 +674,10 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 	double charge1;
 	double charge2;
 
-	for(int iMu=0;iMu<Nmuons;iMu++){
+	for(int iMu=0;iMu<nMuon;iMu++){
 		if(!Muon_passTightID[iMu]) continue;
 		if(!PassMuonIsolation(iMu)) continue;
-		for(int jMu=iMu+1;jMu<Nmuons;jMu++){
+		for(int jMu=iMu+1;jMu<nMuon;jMu++){
 			pt1 = Muon_pT[iMu];
 			pt2 = Muon_pT[jMu];
 			eta1 = Muon_eta[iMu];
@@ -808,7 +809,7 @@ bool DrellYanAnalyzer::PassGenToRecoMatchMu(int genIndex,int &recoIndex)
 	double dR,deta,dphi;
 	float dRMin = 100000;
 	recoIndex=-1;
-	for(int iLep=0;iLep<Nmuons;iLep++){
+	for(int iLep=0;iLep<nMuon;iLep++){
 		deta=Muon_eta[iLep]-GENLepton_eta[genIndex];
 		dphi=abs(Muon_phi[iLep]-GENLepton_phi[genIndex]);
 		if(dphi>pi) dphi=2*pi-dphi;
