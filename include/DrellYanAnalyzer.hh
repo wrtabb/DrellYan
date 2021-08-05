@@ -10,6 +10,7 @@
 #include <TStopwatch.h>
 #include <TLorentzVector.h>
 #include <TFile.h>
+#include <TMath.h>
 
 //Global Variables for the DrellYanVariables namespace
 #include "DrellYanVariables.h"
@@ -83,6 +84,9 @@ class DrellYanAnalyzer
 		bool PassGenToRecoMatch(int genIndex,int &recoIndex);
 		bool PassGenToRecoMatchEle(int genIndex,int &recoIndex);
 		bool PassGenToRecoMatchMu(int genIndex,int &recoIndex);
+		bool PassMuonIsolation(int index);
+		bool PassMuonAngle(double pt1,double eta1,double phi1,double mass1,
+				   double pt2,double eta2,double phi2,double mass2);
 
 		//Get dilepton pairs
 		int GetRecoElectrons(int &leadEle,int &subEle);

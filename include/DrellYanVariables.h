@@ -33,7 +33,8 @@ namespace DrellYanVariables
 	enum VarType{
 		INV_MASS,
 		RAPIDITY,
-		PT
+		PT,
+		MUON_ANGLE
 	};
 	
 	//Process types
@@ -219,6 +220,7 @@ namespace DrellYanVariables
 	const double ptLow = 17;
 	const double ptHigh = 28;
 	const float dRMinCut = 0.3;
+	const double pi = TMath::Pi();
 	
 	const TString electronTrigger = "HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v*";
 	const TString muonTrigger1 = "HLT_IsoMu24_v*";

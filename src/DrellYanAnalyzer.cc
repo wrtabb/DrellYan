@@ -640,20 +640,28 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 	double pt2;
 	double eta1;
 	double eta2;
+	double phi1;
+	double phi2;
 
 	for(int iMu=0;iMu<Nmuons;iMu++){
 		if(!Muon_passTightID[iMu]) continue;
+		if(!PassMuonIsolation(iMu)) continue;
 		for(int jMu=iMu+1;jMu<Nmuons;jMu++){
-			if(!Muon_passTightID[jMu]) continue;
-			//Other cuts not yet applied:
-			//PFIso/pt<0.15
-			//2 muons with opposite charge
-			//Angle between muons < pi - 0.005 rad
-			//smallest dimuon vertex chi2
 			pt1 = Muon_pT[iMu];
 			pt2 = Muon_pT[jMu];
 			eta1 = Muon_eta[iMu];
 			eta2 = Muon_eta[jMu];
+			phi1 = Muon_phi[iMu];
+			phi2 = Muon_phi[jMu];
+
+			if(!Muon_passTightID[jMu]) continue;
+			if(!PassMuonIsolation(jMu)) continue;
+			if(!PassMuonAngle(pt1,eta1,phi1,muMass,pt2,eta2,phi2,muMass)) 
+				continue;
+
+			//Other cuts not yet applied:
+			//2 muons with opposite charge
+			//smallest dimuon vertex chi2
 			if(PassAcceptance(pt1,pt2,eta1,eta2)){
 				numDimuons++;
 				if(pt1>pt2){
@@ -740,7 +748,6 @@ bool DrellYanAnalyzer::PassGenToRecoMatchEle(int genIndex,int &recoIndex)
 	using namespace DrellYanVariables;
 	LepType lepType = _lepType;
 	double dR,deta,dphi;
-	double pi = 3.14159;
 	float dRMin = 100000;
 	recoIndex=-1;
 	for(int iLep=0;iLep<Nelectrons;iLep++){
@@ -766,7 +773,6 @@ bool DrellYanAnalyzer::PassGenToRecoMatchMu(int genIndex,int &recoIndex)
 {
 	using namespace DrellYanVariables;
 	double dR,deta,dphi;
-	double pi = 3.14159;
 	float dRMin = 100000;
 	recoIndex=-1;
 	for(int iLep=0;iLep<Nmuons;iLep++){
@@ -786,6 +792,31 @@ bool DrellYanAnalyzer::PassGenToRecoMatchMu(int genIndex,int &recoIndex)
 		matchFound=false;
 	}
 	return matchFound;
+}//end PassGenToRecomatchMu
+
+bool DrellYanAnalyzer::PassMuonAngle(double pt1,double eta1,double phi1,double mass1,
+				     double pt2,double eta2,double phi2,double mass2)
+{
+	using namespace DrellYanVariables;
+	double angle;
+	angle = CalcVariable(pt1,eta1,phi1,mass1,pt2,eta2,phi2,mass2,MUON_ANGLE);
+	if(angle<pi-0.005) return true;
+	else return false;
+}//end PassMuonAngle
+
+bool DrellYanAnalyzer::PassMuonIsolation(int index)
+{
+	using namespace DrellYanVariables;
+	double pfIso_dBeta;
+	double chargedIso = Muon_PfChargedHadronIsoR04[index];
+	double neutralIso = Muon_PfNeutralHadronIsoR04[index];
+	double gammaIso	  = Muon_PfGammaIsoR04[index];
+	double sumPUPt    = Muon_PFSumPUIsoR04[index];
+	double pT         = Muon_pT[index];
+	double iso_dBeta;
+       	iso_dBeta = (chargedIso+max(0.0,neutralIso+gammaIso-0.5*sumPUPt))/pT;
+	if(iso_dBeta < 0.15) return true;
+	else return false;
 }
 
 ///////////////////////
@@ -842,19 +873,22 @@ double DrellYanAnalyzer::CalcVariable(double pt1,double eta1,double phi1,double 
 {
 	using namespace DrellYanVariables;
 
-	TLorentzVector vGenLepton1;
-	TLorentzVector vGenLepton2;
-	vGenLepton1.SetPtEtaPhiM(pt1,eta1,phi1,mass1);
-	vGenLepton2.SetPtEtaPhiM(pt2,eta2,phi2,mass2);
-	double invMass = (vGenLepton1+vGenLepton2).M();
-	double rapidity= (vGenLepton1+vGenLepton2).Rapidity();
-	double pt = (vGenLepton1+vGenLepton2).Pt();
+	TLorentzVector vLep1;
+	TLorentzVector vLep2;
+	vLep1.SetPtEtaPhiM(pt1,eta1,phi1,mass1);
+	vLep2.SetPtEtaPhiM(pt2,eta2,phi2,mass2);
 
-	if(varType==INV_MASS) return invMass;
-	else if(varType==RAPIDITY) return rapidity;
-	else if(varType==PT) return pt;
-	else return -100000000;
-}
+	if(varType==INV_MASS) return (vLep1+vLep2).M();
+	else if(varType==RAPIDITY) return (vLep1+vLep2).Rapidity();
+	else if(varType==PT) return (vLep1+vLep2).Pt();
+	else if(varType==MUON_ANGLE) return (vLep1.Angle(vLep2.Vect()));
+	else{
+		cout << "ERROR in CalcVariable()!" << endl;
+		cout << "VarType not properly chosen" << endl;
+		cout << "See DrellYanAnalyzer.hh" << endl;
+	       	return -100000000;
+	}
+}//end CalcVariable
 
 double DrellYanAnalyzer::GetInvMass(double pt1,double eta1,double phi1,
 		  	     	    double pt2,double eta2,double phi2)
