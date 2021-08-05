@@ -642,6 +642,8 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 	double eta2;
 	double phi1;
 	double phi2;
+	double charge1;
+	double charge2;
 
 	for(int iMu=0;iMu<Nmuons;iMu++){
 		if(!Muon_passTightID[iMu]) continue;
@@ -653,11 +655,14 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 			eta2 = Muon_eta[jMu];
 			phi1 = Muon_phi[iMu];
 			phi2 = Muon_phi[jMu];
+			charge1 = Muon_charge[iMu];
+			charge2 = Muon_charge[jMu];
 
 			if(!Muon_passTightID[jMu]) continue;
 			if(!PassMuonIsolation(jMu)) continue;
 			if(!PassMuonAngle(pt1,eta1,phi1,muMass,pt2,eta2,phi2,muMass)) 
 				continue;
+			if(charge1*charge2>0) continue;
 
 			//Other cuts not yet applied:
 			//2 muons with opposite charge
