@@ -2,15 +2,7 @@
 
 using namespace DrellYanVariables;
 
-void RunLoop(NtupleType ntupType,SampleType sampleType,LepType lepType);
-
-void test()
-{
-	//RunLoop(TEST,SAMPLE_LL,ELE);
-	RunLoop(TEST,SAMPLE_LL,MUON);
-}
-
-void RunLoop(NtupleType ntupType,SampleType sampleType,LepType lepType)
+void test(LepType lepType,SampleType sampleType,NtupleType ntupType)
 {
 	DrellYanAnalyzer*dy = new DrellYanAnalyzer(ntupType,sampleType,lepType);
 	dy->LoadData();

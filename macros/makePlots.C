@@ -133,11 +133,11 @@ void makePlots(LepType lepType,SampleType sampleType,NtupleType ntupType)
 	}
 
 	cMass->SaveAs(saveNameMass);
-	//delete cMass;
+	delete cMass;
 	cRapidity->SaveAs(saveNameRapidity);
-	//delete cRapidity;
+	delete cRapidity;
 	cPt->SaveAs(saveNamePt);
-	//delete cPt;
+	delete cPt;
 }
 
 TCanvas*MakeCanvas(TString cname,LogType logtype)
