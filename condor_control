@@ -1,7 +1,7 @@
 
 universe		= vanilla 
 executable              = ProcessDrellYan 
-arguments               = $(runType) $(lepType) $(sampleType) 
+arguments               = $(arg1) $(arg2) $(arg3) 
 transfer_input_files    = test.C,src/DrellYanAnalyzer.cc,src/DrellYanAnalyzer_cc.d,src/DrellYanAnalyzer_cc.so,src/DrellYanAnalyzer_cc_ACLiC_dict_rdict.pcm,include/DrellYanAnalyzer.hh,include/DrellYanVariables.h,ProcessDrellYan.py 
 
 #+WantDocker = True
