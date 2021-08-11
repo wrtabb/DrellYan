@@ -1,8 +1,8 @@
-#include "include/DrellYanAnalyzer.hh"
+#include "DrellYanAnalyzer.hh"
 
 using namespace DrellYanVariables;
 
-void test(LepType lepType,SampleType sampleType,NtupleType ntupType)
+void test(NtupleType ntupType,SampleType sampleType,LepType lepType)
 {
 	DrellYanAnalyzer*dy = new DrellYanAnalyzer(ntupType,sampleType,lepType);
 	dy->LoadData();

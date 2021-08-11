@@ -16,7 +16,7 @@ print("Lepton type: "+lepType)
 print("Sample type: "+sampleType)
 print("Run type: "+runType)
 
-scriptSpecs = 'testC('+ str(runType) + ','+str(sampleType)+','+str(lepType)+')'
+scriptSpecs = 'test.C+('+ str(runType) + ','+str(sampleType)+','+str(lepType)+')'
 print(scriptSpecs)
 rootCommand = ['root']
 rootCommand.append('-b')
