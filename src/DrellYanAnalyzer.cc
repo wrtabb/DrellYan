@@ -1,4 +1,4 @@
-#include "../include/DrellYanAnalyzer.hh"
+#include "DrellYanAnalyzer.hh"
 ///////////////////////////////////////////////
 //-----Initialize DrellYanAnalyzer Class-----//
 ///////////////////////////////////////////////
@@ -10,7 +10,7 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_sampleType = sampleType;
 	_lepType = lepType;
 	_ntupType = ntupType;
-	TFile*puFile = new TFile("data/pileup.root");
+	TFile*puFile = new TFile("pileup.root");
         _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
 	if(ntupType==V2P6){
 		_base_directory = base_directory_v2p6;
@@ -462,7 +462,8 @@ int DrellYanAnalyzer::EventLoop()
 				_trees.at(i).at(j)->GetEntry(iEntry);
 
 				//Calculate pileup weight
-				double puWeight = GetPUWeight();
+				//double puWeight = GetPUWeight();
+				double puWeight = 1.0;
 
 				//Get gen level leptons
 				int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
@@ -705,7 +706,7 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 
 			//Other cuts not yet applied:
 			//smallest dimuon vertex chi2
-			PassVertexChi2(iMu,jMu);
+			//PassVertexChi2(iMu,jMu);
 			if(PassAcceptance(pt1,pt2,eta1,eta2)){
 				numDimuons++;
 				if(pt1>pt2){
@@ -875,7 +876,7 @@ bool DrellYanAnalyzer::PassMuonIsolation(int index)
 void DrellYanAnalyzer::SaveResults()
 {
 	using namespace DrellYanVariables;
-	TString filesave = "data/DYHists";
+	TString filesave = "DYHists";
 	if(_ntupType==V2P6) filesave+= "_v2p6";
 	else if (_ntupType==V2P3) filesave+= "_v2p3";
 	else if(_ntupType==TEST) filesave += "_TEST";

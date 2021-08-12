@@ -5,7 +5,7 @@ arguments               = $(arg1) $(arg2) $(arg3)
 transfer_input_files    = test.C,src/DrellYanAnalyzer.cc,include/DrellYanAnalyzer.hh,include/DrellYanVariables.h,ProcessDrellYan.py,rootlogon.C,data/pileup.root 
 
 +WantDocker = True
-docker_image ="unlhcc/osg-wn-el6"
+docker_image ="unlhcc/osg-wn-el7"
 use_x509userproxy = true
 
 should_transfer_files   = YES 
