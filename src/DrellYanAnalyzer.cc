@@ -1,4 +1,4 @@
-#include "DrellYanAnalyzer.hh"
+#include "../include/DrellYanAnalyzer.hh"
 ///////////////////////////////////////////////
 //-----Initialize DrellYanAnalyzer Class-----//
 ///////////////////////////////////////////////
@@ -10,7 +10,7 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_sampleType = sampleType;
 	_lepType = lepType;
 	_ntupType = ntupType;
-	TFile*puFile = new TFile("pileup.root");
+	TFile*puFile = new TFile("data/pileup.root");
         _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
 	if(ntupType==V2P6){
 		_base_directory = base_directory_v2p6;
@@ -155,6 +155,10 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 		chain->SetBranchAddress("Electron_phi",&Electron_phi,&b_Electron_phi);
 		chain->SetBranchAddress("Electron_passMediumID",&Electron_passMediumID,
 					 &b_Electron_passMediumID);
+		chain->SetBranchAddress("vtxTrkCkt1Pt",&pvtxTrkCkt1Pt);
+		chain->SetBranchAddress("vtxTrkCkt2Pt",&pvtxTrkCkt2Pt);
+		chain->SetBranchAddress("vtxTrkChi2",&pvtxTrkChi2);
+		chain->SetBranchAddress("vtxTrkNdof",&pvtxTrkNdof);
 	}
 	if(lepType!=ELE){
 	//Muons
@@ -454,10 +458,16 @@ int DrellYanAnalyzer::EventLoop()
 				double rapidityPruned 	= -1000;
 				double ptPruned 	= -1000;
 
+				//Get events from tree
 				_trees.at(i).at(j)->GetEntry(iEntry);
+
+				//Calculate pileup weight
 				double puWeight = GetPUWeight();
+
+				//Get gen level leptons
 				int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
 					  	          	  iFSR1,iFSR2);
+				//Get reco level leptons
 				int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
 
 				if(nDileptonsGen==1 && nDileptonsReco==1){
@@ -694,8 +704,8 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 			if(charge1*charge2>0) continue;
 
 			//Other cuts not yet applied:
-			//2 muons with opposite charge
 			//smallest dimuon vertex chi2
+			PassVertexChi2(iMu,jMu);
 			if(PassAcceptance(pt1,pt2,eta1,eta2)){
 				numDimuons++;
 				if(pt1>pt2){
@@ -761,7 +771,7 @@ bool DrellYanAnalyzer::PassHLT()
 		}//end if lepType
 	}//end loop over triggers
 	return passHLT;
-}
+}//end PassHLT
 
 bool DrellYanAnalyzer::PassGenToRecoMatch(int genIndex,int &recoIndex)
 {
@@ -775,7 +785,13 @@ bool DrellYanAnalyzer::PassGenToRecoMatch(int genIndex,int &recoIndex)
 		cout << "Must be ELE or MUON" << endl;
 		return false;
 	}
-}
+}//end PassgenToRecoMatch
+
+double DrellYanAnalyzer::GetVertexChi2(int index1,int index2)
+{
+	double vtxChi2 = 1000000;
+	return vtxChi2;	
+}//end PassVertexChi2
 
 bool DrellYanAnalyzer::PassGenToRecoMatchEle(int genIndex,int &recoIndex)
 {
@@ -801,7 +817,7 @@ bool DrellYanAnalyzer::PassGenToRecoMatchEle(int genIndex,int &recoIndex)
 		matchFound=false;
 	}
 	return matchFound;
-}
+}//end PassGenToRecoMatchEle
 
 bool DrellYanAnalyzer::PassGenToRecoMatchMu(int genIndex,int &recoIndex)
 {
@@ -859,7 +875,7 @@ bool DrellYanAnalyzer::PassMuonIsolation(int index)
 void DrellYanAnalyzer::SaveResults()
 {
 	using namespace DrellYanVariables;
-	TString filesave = "DYHists";
+	TString filesave = "data/DYHists";
 	if(_ntupType==V2P6) filesave+= "_v2p6";
 	else if (_ntupType==V2P3) filesave+= "_v2p3";
 	else if(_ntupType==TEST) filesave += "_TEST";
@@ -891,6 +907,10 @@ void DrellYanAnalyzer::SaveResults()
 
 	if(_lepType==ELE) filesave += "_EE.root";
 	else if(_lepType==MUON) filesave += "_MuMu.root";
+
+	cout << "*********************************************************" << endl;
+	cout << "Saving histograms in file: " << filesave << endl;
+	cout << "*********************************************************" << endl;
 
 	TFile*file = new TFile(filesave,"recreate");
 	for(int i=0;i<_nHists;i++){

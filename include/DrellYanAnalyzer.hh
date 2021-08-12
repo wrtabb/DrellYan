@@ -77,6 +77,7 @@ class DrellYanAnalyzer
 		double CalcVariable(double pt1,double eta1,double phi1,double mass1,
 				    double pt2,double eta2,double phi2,double mass2,
 				    DrellYanVariables::VarType varType);
+		double GetVertexChi2(int index1,int index2);
 
 		//cuts
 		bool PassAcceptance(double pt1,double pt2,double eta1,double eta2);
