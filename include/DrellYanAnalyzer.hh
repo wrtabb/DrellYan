@@ -20,7 +20,8 @@ class DrellYanAnalyzer
 	public:
 		DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 				 DrellYanVariables::SampleType sampletype,
-				 DrellYanVariables::LepType lepType);
+				 DrellYanVariables::LepType lepType,
+				 TString sampleToLoad);
 		int GetRecoLeptons(int &leadLep,int &subLep);
 		int GetGenLeptons(int &iHard1,int &iHard2,
 				  int &iFSR1,int &iFSR2);
@@ -40,23 +41,11 @@ class DrellYanAnalyzer
 		TH1F*_hPileupRatio;
 	
 		//Tree definitions
-		vector<TChain*>_treeLL;
-		vector<TChain*>_treeTops;
-		vector<TChain*>_treeFakes;
-		vector<TChain*>_treeDibosons;
-		vector<TChain*>_treeTaus;
-		vector<TChain*>_treeData;
-		vector<vector<TChain*>> _trees;
+		TChain*_tree;
 	
 		//Files
 		TString _base_directory;
-		vector<TString> _files_LL;//# of files: 11
-		vector<TString> _files_tops;//# of files: 5
-		vector<TString> _files_fakes;//# of files: 3
-		vector<TString> _files_dibosons;//# of files: 3
-		vector<TString> _files_taus;//# of files: 11
-		vector<TString> _files_data;//# of files: 8
-		vector<vector<TString>> _files;
+		TString _FileToLoad;
 
 		//-----Functions-----//
 		//loading data

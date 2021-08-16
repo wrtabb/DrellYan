@@ -4,7 +4,8 @@
 ///////////////////////////////////////////////
 DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 				   DrellYanVariables::SampleType sampleType,
-				   DrellYanVariables::LepType lepType)
+				   DrellYanVariables::LepType lepType,
+				   TString sampleToLoad)
 {
 	using namespace DrellYanVariables;
 	_sampleType = sampleType;
@@ -12,64 +13,8 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_ntupType = ntupType;
 	TFile*puFile = new TFile("pileup.root");
         _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
-	if(ntupType==V2P6){
-		_base_directory = base_directory_v2p6;
-		if(lepType==ELE) _files_LL = dy_EE_v2p6;
-		else if(lepType==MUON) _files_LL = dy_MuMu_v2p6;
-
-		_files_tops = tops_v2p6;
-		_files_fakes = fakes_v2p6;
-		_files_dibosons = dibosons_v2p6;
-		_files_taus = taus_v2p6;
-		_files_data = data_v2p6;
-
-		if(sampleType==SAMPLE_LL){
-		       	_files.push_back(_files_LL);
-		}
-		else if(sampleType==SAMPLE_TOP){
-		       	_files.push_back(_files_tops);
-		}
-		else if(sampleType==SAMPLE_FAKE){ 
-			_files.push_back(_files_fakes);
-		}
-		else if(sampleType==SAMPLE_DIBOSON){
-		       	_files.push_back(_files_dibosons);
-		}
-		else if(sampleType==SAMPLE_TAU){
-		       	_files.push_back(_files_taus);
-		}
-		else if(sampleType==SAMPLE_DATA){
-		       	_files.push_back(_files_data);
-		}
-		else if(sampleType==SAMPLE_ALL){
-			_files.push_back(_files_LL);
-			_files.push_back(_files_tops);
-			_files.push_back(_files_fakes);
-			_files.push_back(_files_dibosons);
-			_files.push_back(_files_taus);
-			_files.push_back(_files_data);
-		}
-		else {
-			cout << "*************************************" << endl;
-			cout << "* SaupleType must be chosen!        *" << endl;
-			cout << "* See ./include/DrellYanVariables.h *" << endl;
-			cout << "*************************************" << endl;
-			return;
-		}
-	}//end if ntupType
-	else if(ntupType==TEST){
-		_base_directory = base_directory_test;
-		if(lepType==ELE) _files_LL = dy_EE_test;
-		else if(lepType==MUON) _files_LL = dy_MuMu_test;
-		_files.push_back(_files_LL);
-	}//end if ntupType
-	else if(ntupType==SINGLE_TEST){
-		_base_directory = base_directory_v2p6;
-		if(lepType==ELE) _files_LL = dy_EE_SingleTest;
-		else if(lepType==MUON) _files_LL = dy_MuMu_SingleTest;
-		_files.push_back(_files_LL);
-	}//end if ntupType
-	_nSampleTypes = _files.size();
+	_FileToLoad = base_directory_v2p6;
+	_FileToLoad += sampleToLoad;
 }//end function DrellYanAnalyzer()
 
 ///////////////////////
@@ -95,26 +40,9 @@ int DrellYanAnalyzer::LoadTrees()
 	TStopwatch totaltime;
 	totaltime.Start();
 
-	int nSamples = _files.size();
-	cout << "Number of samples to load: " << nSamples << endl;
-	int nFiles;
-	Long64_t nEvents = 0;
-	for(int i=0;i<nSamples;i++){
-		nFiles = _files.at(i).size();
-		cout << "Files in sample: " <<  nFiles << endl;
-
-		std::vector<TChain*>tempChain;
-		for(int j=0;j<nFiles;j++){
-			cout << "Loading file: " << endl;
-			cout << _files.at(i).at(j) << endl;
-			tempChain.push_back(new TChain(DrellYanVariables::treeName));
-			tempChain.at(j)->Add(_base_directory+_files.at(i).at(j));
-			nEvents += tempChain.at(j)->GetEntries();
-			cout << "Loaded " << tempChain.at(j)->GetEntries() << endl;
-		}
-		_trees.push_back(tempChain);
-	}
-	_nEvents = nEvents;
+	_tree = new TChain(_treeName);
+	_tree->Add(_FileToLoad);
+	_nEvents = _tree->GetEvents();;
 
 	totaltime.Stop();
 	Double_t TotalCPURunTime = totaltime.CpuTime();
@@ -129,16 +57,11 @@ int DrellYanAnalyzer::LoadTrees()
 	cout << "**************************************************************************" << endl;
 	cout << endl;
 
-	for(int i=0;i<_nSampleTypes;i++){
-		nFiles = _files.at(i).size();
-		bool isMC = true;
-		for(int j=0;j<nFiles;j++){
-			TBranch*testBranch = (TBranch*)_trees.at(i).at(j)->
-				GetListOfBranches()->FindObject("GENEvt_weight");
-			if(!testBranch) isMC = false; 
-			InitializeBranches(_trees.at(i).at(j),isMC);
-		}
-	}
+	bool isMC = true;
+	TBranch*testBranch = (TBranch*)_tree->
+		GetListOfBranches()->FindObject("GENEvt_weight");
+	if(!testBranch) isMC = false; 
+	InitializeBranches(_tree,isMC);
 	
 	return returnCode;
 }
@@ -304,7 +227,7 @@ double DrellYanAnalyzer::GetWeights(int index1,int index2)
 	if(sampleType==SAMPLE_LL) xSec = xSec_LL;
 	else if(sampleType==SAMPLE_TAU) xSec = xSec_LL;
 	double xSecWeight = 1.0;
-	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
+	if(_ntupType==V2P6 || SINGLE_FILE) xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
 	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec.at(index2)/nEntries;
 
 	//-----Pileup Weight-----//

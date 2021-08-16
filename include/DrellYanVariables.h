@@ -1,14 +1,15 @@
 
 namespace DrellYanVariables
 {
-	TString treeName = "recoTree/DYTree";
+	TString _treeName = "recoTree/DYTree";
 
 	//Ntuple version
 	enum NtupleType{
 		V2P3,
 		V2P6,
 		TEST,
-		SINGLE_TEST
+		SINGLE_FILE
+
 	};
 	
 	//Lepton selection
