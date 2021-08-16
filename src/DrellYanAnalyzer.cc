@@ -462,8 +462,7 @@ int DrellYanAnalyzer::EventLoop()
 				_trees.at(i).at(j)->GetEntry(iEntry);
 
 				//Calculate pileup weight
-				//double puWeight = GetPUWeight();
-				double puWeight = 1.0;
+				double puWeight = GetPUWeight();
 
 				//Get gen level leptons
 				int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
