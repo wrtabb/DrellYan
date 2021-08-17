@@ -28,9 +28,11 @@ class DrellYanAnalyzer
 		int LoadData();
 		Long64_t GetNevents();
 		int EventLoop();
+		bool GetIsMC();
 	private:
 		Long64_t _nEvents;
-		int _nSampleTypes;
+		bool _isMC;
+
 		DrellYanVariables::SampleType _sampleType;
 		DrellYanVariables::LepType _lepType;
 		DrellYanVariables::NtupleType _ntupType;
@@ -44,6 +46,7 @@ class DrellYanAnalyzer
 		TH1D*_hRapidityReco;
 		TH1D*_hPtReco;
 		TH1F*_hPileupRatio;
+		void DefineHistogramProperties(TH1*hist);
 	
 		//Tree definitions
 		TChain*_tree;
@@ -55,8 +58,10 @@ class DrellYanAnalyzer
 		//-----Functions-----//
 		//loading data
 		int LoadTrees();
-		int InitializeBranches(TChain*chain,bool isMC);
+		int InitializeBranches(TChain*chain);
 		void InitializeHistograms();
+		TString GetSampleName();
+
 
 		//calculations
 		double GetWeights();

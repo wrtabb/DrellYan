@@ -11,7 +11,7 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_sampleType = sampleType;
 	_lepType = lepType;
 	_ntupType = ntupType;
-	TFile*puFile = new TFile("pileup.root");
+	TFile*puFile = new TFile("data/pileup.root");
         _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
 	_fileName = fileName;
 	if(ntupType==V2P6) _FileToLoad = base_directory_v2p6;
@@ -21,23 +21,9 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 		cout << "See include/DrellYanVariables.h for more information" << endl;
 	}
 
-	TString sampleToLoad;
-	if(fileName==DYLL_M10to50_EE) 	       sampleToLoad += "DYLL_M10to50_EE";
-	else if(fileName==DYLL_M50to100_EE)    sampleToLoad += "DYLL_M50to100_EE";
-        else if(fileName==DYLL_M100to200_EE)   sampleToLoad += "DYLL_M100to200_EE";
-        else if(fileName==DYLL_M200to400_EE)   sampleToLoad += "DYLL_M200to400_EE";
-        else if(fileName==DYLL_M400to500_EE)   sampleToLoad += "DYLL_M400to500_EE";
-        else if(fileName==DYLL_M500to700_EE)   sampleToLoad += "DYLL_M500to700_EE";
-        else if(fileName==DYLL_M700to800_EE)   sampleToLoad += "DYLL_M700to800_EE";
-        else if(fileName==DYLL_M800to1000_EE)  sampleToLoad += "DYLL_M800to1000_EE";
-        else if(fileName==DYLL_M1000to1500_EE) sampleToLoad += "DYLL_M1000to1500_EE";
-        else if(fileName==DYLL_M1500to2000_EE) sampleToLoad += "DYLL_M1500to2000_EE";
-        else if(fileName==DYLL_M2000to3000_EE) sampleToLoad += "DYLL_M2000to3000_EE";
-	else{
-		cout << "FileName not properly chosen" << endl;
-	}
-	_FileToLoad += sampleToLoad;
+	_FileToLoad += GetSampleName();
 }//end function DrellYanAnalyzer()
+
 
 ///////////////////////
 //-----Load data-----//
@@ -51,6 +37,11 @@ Long64_t DrellYanAnalyzer::GetNevents()
 {
 	return _nEvents;	
 }
+
+bool DrellYanAnalyzer::GetIsMC()
+{
+	return _isMC;
+}//end GetIsMC
 
 int DrellYanAnalyzer::LoadTrees()
 {
@@ -80,16 +71,16 @@ int DrellYanAnalyzer::LoadTrees()
 	cout << "**************************************************************************" << endl;
 	cout << endl;
 
-	bool isMC = true;
+	_isMC = true;
 	TBranch*testBranch = (TBranch*)_tree->
 		GetListOfBranches()->FindObject("GENEvt_weight");
-	if(!testBranch) isMC = false; 
-	InitializeBranches(_tree,isMC);
+	if(!testBranch) _isMC = false; 
+	InitializeBranches(_tree);
 	
 	return returnCode;
 }
 
-int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
+int DrellYanAnalyzer::InitializeBranches(TChain*chain)
 {
 	using namespace DrellYanVariables;
 	if(_lepType!=MUON){
@@ -137,7 +128,7 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 	chain->SetBranchAddress("nVertices",&nVertices,&b_nVertices);
 	chain->SetBranchAddress("nPileUp",&nPileUp,&b_nPileUp);
 
-	if(isMC){
+	if(_isMC){
 		//Gen leptons
 		chain->SetBranchAddress("GENnPair", &GENnPair, &b_GENnPair);
 		chain->SetBranchAddress("GENLepton_eta", &GENLepton_eta, &b_GENLepton_eta);
@@ -179,8 +170,11 @@ void DrellYanAnalyzer::InitializeHistograms()
 	histNamePt += "HardProcess";
 
 	_hMassHardProcess = new TH1D(histNameMass,"",nMassBins,massbins);
+	DefineHistogramProperties(_hMassHardProcess);
 	_hRapidityHardProcess = new TH1D(histNameRapidity,"",nRapidityBins,rapiditybins);
+	DefineHistogramProperties(_hRapidityHardProcess);
 	_hPtHardProcess = new TH1D(histNamePt,"",nPtBins,ptbins);
+	DefineHistogramProperties(_hPtHardProcess);
 
 	histNameMass = "hMass";
 	histNameMass += "Reco";
@@ -190,9 +184,43 @@ void DrellYanAnalyzer::InitializeHistograms()
 	histNamePt += "Reco";
 
 	_hMassReco = new TH1D(histNameMass,"",nMassBins,massbins);
+	DefineHistogramProperties(_hMassReco);
 	_hRapidityReco = new TH1D(histNameRapidity,"",nRapidityBins,rapiditybins);
+	DefineHistogramProperties(_hRapidityReco);
 	_hPtReco = new TH1D(histNamePt,"",nPtBins,ptbins);
+	DefineHistogramProperties(_hPtReco);
 }//end InitializeHistograms
+
+void DrellYanAnalyzer::DefineHistogramProperties(TH1*hist)
+{
+	using namespace DrellYanVariables;
+	if(!_isMC){
+		hist->SetMarkerStyle(20);
+		hist->SetMarkerColor(kBlack);
+	}//end !isMC
+	else{
+		if(_sampleType==SAMPLE_LL){
+			hist->SetFillColor(kOrange-2);
+			hist->SetLineColor(kOrange+3);
+		}
+		else if(_sampleType==SAMPLE_TOP){
+			hist->SetFillColor(kBlue+2);
+			hist->SetLineColor(kBlue+3);
+		}
+		else if(_sampleType==SAMPLE_FAKE){
+			hist->SetFillColor(kViolet+5);
+			hist->SetLineColor(kViolet+3);
+		}
+		else if(_sampleType==SAMPLE_DIBOSON){
+			hist->SetFillColor(kRed+2);
+			hist->SetLineColor(kRed+4);
+		}
+		else if(_sampleType==SAMPLE_TAU){
+			hist->SetFillColor(kGreen+2);
+			hist->SetLineColor(kGreen+3);
+		}
+	}//end else
+}//end DefineHistogramProperties()
 
 /////////////////////////
 //-----Get Weights-----//
@@ -305,11 +333,6 @@ int DrellYanAnalyzer::EventLoop()
 		 return 0;
 	}
 
-	//Determine if tree is MC or data
-	bool isMC = true;
-	TBranch*testBranch = (TBranch*)_tree->
-		GetListOfBranches()->FindObject("GENEvt_weight");
-	if(!testBranch) isMC = false; 
 	Long64_t nentries = _tree->GetEntries();
 	
 	//cross section weights
@@ -331,7 +354,7 @@ int DrellYanAnalyzer::EventLoop()
 	double genEvtWeight;
 	double absGenEvtWeight;
 	double evtWeightRatio;
-	if(_ntupType!=TEST && isMC){ 
+	if(_ntupType!=TEST && _isMC){ 
 		sumGenWeight = GetGenWeightSum();
 		genEvtWeight = GENEvt_weight;
 		absGenEvtWeight = fabs(GENEvt_weight);
@@ -400,7 +423,7 @@ int DrellYanAnalyzer::EventLoop()
 		_tree->GetEntry(iEntry);
 
 		//Calculate pileup weight
-	//	double puWeight = GetPUWeight();
+		puWeight = GetPUWeight();
 		//Get gen level leptons
 		int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
 						  iFSR1,iFSR2);
@@ -869,6 +892,29 @@ void DrellYanAnalyzer::SaveResults()
 	file->Close();
 	return;
 }
+
+TString DrellYanAnalyzer::GetSampleName()
+{
+	using namespace DrellYanVariables;
+
+	TString sampleName;
+	if(_fileName==DYLL_M10to50_EE) 	        sampleName += "DYLL_M10to50_EE";
+	else if(_fileName==DYLL_M50to100_EE)    sampleName += "DYLL_M50to100_EE";
+        else if(_fileName==DYLL_M100to200_EE)   sampleName += "DYLL_M100to200_EE";
+        else if(_fileName==DYLL_M200to400_EE)   sampleName += "DYLL_M200to400_EE";
+        else if(_fileName==DYLL_M400to500_EE)   sampleName += "DYLL_M400to500_EE";
+        else if(_fileName==DYLL_M500to700_EE)   sampleName += "DYLL_M500to700_EE";
+        else if(_fileName==DYLL_M700to800_EE)   sampleName += "DYLL_M700to800_EE";
+        else if(_fileName==DYLL_M800to1000_EE)  sampleName += "DYLL_M800to1000_EE";
+        else if(_fileName==DYLL_M1000to1500_EE) sampleName += "DYLL_M1000to1500_EE";
+        else if(_fileName==DYLL_M1500to2000_EE) sampleName += "DYLL_M1500to2000_EE";
+        else if(_fileName==DYLL_M2000to3000_EE) sampleName += "DYLL_M2000to3000_EE";
+	else{
+		cout << "FileName not properly chosen" << endl;
+	}
+
+	return sampleName;
+}//end GetSampleName
 
 double DrellYanAnalyzer::CalcVariable(double pt1,double eta1,double phi1,double mass1,
 				      double pt2,double eta2,double phi2,double mass2,

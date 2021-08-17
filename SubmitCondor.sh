@@ -2,7 +2,7 @@
 
 lepType=ELE
 sampleType=SAMPLE_LL
-runType=V2P6
+runType=TEST
 root_file=(
 	DYLL_M10to50_EE
 	DYLL_M50to100_EE
