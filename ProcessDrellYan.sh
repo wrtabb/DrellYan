@@ -13,10 +13,11 @@ cd CMSSW_10_6_1/src
 eval `scramv1 runtime -sh`
 cd -
 
+mkdir output_data
 # Run Processing code 
 echo "Run the tree analysis script"
-echo "ProcessDrellYan.py $1 $2 $3"
-python3 ProcessDrellYan.py $1 $2 $3
+echo "ProcessDrellYan.py $1 $2 $3 $4"
+python3 ProcessDrellYan.py $1 $2 $3 $4
 
 echo "Ending processing at " $(date)
 

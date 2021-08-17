@@ -2,7 +2,7 @@
 
 using namespace DrellYanVariables;
 
-void test(NtupleType ntupType,SampleType sampleType,LepType lepType,TString fileName)
+void test(NtupleType ntupType,SampleType sampleType,LepType lepType,FileName fileName)
 {
 	DrellYanAnalyzer*dy = new DrellYanAnalyzer(ntupType,sampleType,lepType,fileName);
 	dy->LoadData();

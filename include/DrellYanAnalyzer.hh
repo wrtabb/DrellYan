@@ -21,7 +21,7 @@ class DrellYanAnalyzer
 		DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 				 DrellYanVariables::SampleType sampletype,
 				 DrellYanVariables::LepType lepType,
-				 TString sampleToLoad);
+				 DrellYanVariables::FileName fileName);
 		int GetRecoLeptons(int &leadLep,int &subLep);
 		int GetGenLeptons(int &iHard1,int &iHard2,
 				  int &iFSR1,int &iFSR2);
@@ -34,10 +34,15 @@ class DrellYanAnalyzer
 		DrellYanVariables::SampleType _sampleType;
 		DrellYanVariables::LepType _lepType;
 		DrellYanVariables::NtupleType _ntupType;
+		DrellYanVariables::FileName _fileName;
 
 		//Histogram definitions
-		vector<TH1D*> _hists;
-		int _nHists;
+		TH1D*_hMassHardProcess;
+		TH1D*_hRapidityHardProcess;
+		TH1D*_hPtHardProcess;
+		TH1D*_hMassReco;
+		TH1D*_hRapidityReco;
+		TH1D*_hPtReco;
 		TH1F*_hPileupRatio;
 	
 		//Tree definitions
@@ -54,8 +59,8 @@ class DrellYanAnalyzer
 		void InitializeHistograms();
 
 		//calculations
-		double GetWeights(int index,int index2);
-		double GetGenWeightSum(int index,int index2);
+		double GetWeights();
+		double GetGenWeightSum();
 		double GetPUWeight();
 		double GetInvMass(double pt1,double eta1,double phi1,
 				  double pt2,double eta2,double phi2);

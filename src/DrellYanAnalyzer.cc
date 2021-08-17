@@ -5,7 +5,7 @@
 DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 				   DrellYanVariables::SampleType sampleType,
 				   DrellYanVariables::LepType lepType,
-				   TString sampleToLoad)
+				   DrellYanVariables::FileName fileName)
 {
 	using namespace DrellYanVariables;
 	_sampleType = sampleType;
@@ -13,7 +13,29 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_ntupType = ntupType;
 	TFile*puFile = new TFile("pileup.root");
         _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
-	_FileToLoad = base_directory_v2p6;
+	_fileName = fileName;
+	if(ntupType==V2P6) _FileToLoad = base_directory_v2p6;
+	else if(ntupType==TEST) _FileToLoad = base_directory_test;
+	else{
+		cout << "NtupleType not properly chosen in DrellYanAnalyzer()" << endl;
+		cout << "See include/DrellYanVariables.h for more information" << endl;
+	}
+
+	TString sampleToLoad;
+	if(fileName==DYLL_M10to50_EE) 	       sampleToLoad += "DYLL_M10to50_EE";
+	else if(fileName==DYLL_M50to100_EE)    sampleToLoad += "DYLL_M50to100_EE";
+        else if(fileName==DYLL_M100to200_EE)   sampleToLoad += "DYLL_M100to200_EE";
+        else if(fileName==DYLL_M200to400_EE)   sampleToLoad += "DYLL_M200to400_EE";
+        else if(fileName==DYLL_M400to500_EE)   sampleToLoad += "DYLL_M400to500_EE";
+        else if(fileName==DYLL_M500to700_EE)   sampleToLoad += "DYLL_M500to700_EE";
+        else if(fileName==DYLL_M700to800_EE)   sampleToLoad += "DYLL_M700to800_EE";
+        else if(fileName==DYLL_M800to1000_EE)  sampleToLoad += "DYLL_M800to1000_EE";
+        else if(fileName==DYLL_M1000to1500_EE) sampleToLoad += "DYLL_M1000to1500_EE";
+        else if(fileName==DYLL_M1500to2000_EE) sampleToLoad += "DYLL_M1500to2000_EE";
+        else if(fileName==DYLL_M2000to3000_EE) sampleToLoad += "DYLL_M2000to3000_EE";
+	else{
+		cout << "FileName not properly chosen" << endl;
+	}
 	_FileToLoad += sampleToLoad;
 }//end function DrellYanAnalyzer()
 
@@ -40,9 +62,10 @@ int DrellYanAnalyzer::LoadTrees()
 	TStopwatch totaltime;
 	totaltime.Start();
 
+	TString load_file = _FileToLoad+".root";
 	_tree = new TChain(_treeName);
-	_tree->Add(_FileToLoad);
-	_nEvents = _tree->GetEvents();;
+	_tree->Add(load_file);
+	_nEvents = _tree->GetEntries();;
 
 	totaltime.Stop();
 	Double_t TotalCPURunTime = totaltime.CpuTime();
@@ -69,8 +92,7 @@ int DrellYanAnalyzer::LoadTrees()
 int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 {
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
-	if(lepType!=MUON){
+	if(_lepType!=MUON){
 		//Electrons
 		chain->SetBranchAddress("Nelectrons",&Nelectrons,&b_Nelectrons);
 		chain->SetBranchAddress("Electron_pT",&Electron_pT,&b_Electron_pT);
@@ -83,7 +105,7 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 		chain->SetBranchAddress("vtxTrkChi2",&pvtxTrkChi2);
 		chain->SetBranchAddress("vtxTrkNdof",&pvtxTrkNdof);
 	}
-	if(lepType!=ELE){
+	if(_lepType!=ELE){
 	//Muons
 		chain->SetBranchAddress("nMuon",&nMuon,&b_nMuon);
 		chain->SetBranchAddress("Muon_pT",&Muon_pT,&b_Muon_pT);
@@ -147,94 +169,57 @@ int DrellYanAnalyzer::InitializeBranches(TChain*chain,bool isMC)
 void DrellYanAnalyzer::InitializeHistograms()
 {
 	using namespace DrellYanVariables;
-	SampleType sampleType = _sampleType; //type of sample being processed
-	LepType lepType = _lepType; //type of lepton
-	int nSamples = _nSampleTypes; //number of samples being processed
-	int nVars = 3; //number of variables to plot (mass, rapidity, pt, ...)
-	int nProcs = 4;
 	TString lepTag;
-	vector<TString> sampleTag;
+	
+	TString histNameMass = "hMass";
+	histNameMass += "HardProcess";
+	TString histNameRapidity = "hRapidity";
+	histNameRapidity += "HardProcess";
+	TString histNamePt = "hPt";
+	histNamePt += "HardProcess";
 
-	if(sampleType==SAMPLE_LL) sampleTag.push_back("DYtoLL");
-	else if(sampleType==SAMPLE_TOP) sampleTag.push_back("Tops");
-	else if(sampleType==SAMPLE_FAKE) sampleTag.push_back("Fakes");
-	else if(sampleType==SAMPLE_DIBOSON) sampleTag.push_back("Dibosons");
-	else if(sampleType==SAMPLE_TAU) sampleTag.push_back("Taus");
-	else if(sampleType==SAMPLE_DATA) sampleTag.push_back("Data");
-	else if(sampleType==SAMPLE_ALL){
-		sampleTag.push_back("DYtoLL");
-		sampleTag.push_back("Tops");
-		sampleTag.push_back("Fakes");
-		sampleTag.push_back("Dibosons");
-		sampleTag.push_back("Taus");
-		sampleTag.push_back("Data");
-	}
-	else {
-		cout << "**********************************" << endl;
-		cout << "ERROR in InitializeHistograms()!!!" << endl;	
-		cout << "Sample type not properly defined" << endl;
-		return;
-	}
+	_hMassHardProcess = new TH1D(histNameMass,"",nMassBins,massbins);
+	_hRapidityHardProcess = new TH1D(histNameRapidity,"",nRapidityBins,rapiditybins);
+	_hPtHardProcess = new TH1D(histNamePt,"",nPtBins,ptbins);
 
-	if(lepType==ELE) lepTag = "_EE_";
-	else lepTag = "_MuMu_";
+	histNameMass = "hMass";
+	histNameMass += "Reco";
+	histNameRapidity = "hRapidity";
+	histNameRapidity += "Reco";
+	histNamePt = "hPt";
+	histNamePt += "Reco";
 
-	vector<TString> varName = {
-		"InvMass",
-		"Rapidity",
-		"Pt"
-	};
-
-	vector<TString> procTag = {
-		"HardProcess",
-		"FSR",
-		"Reco",
-		"Pruned"
-	};
-
-	_nHists = nSamples*nVars*nProcs;
-	TH1D*hist[nSamples][nVars][nProcs];
-	for(int i=0;i<nSamples;i++){
-		for(int j=0;j<nVars;j++){
-			for(int k=0;k<nProcs;k++){
-				TString hName = "hist";
-				hName += varName.at(j);
-				hName += lepTag;
-				hName += sampleTag.at(i);  
-				hName += procTag.at(k);
-				if(j==0)hist[i][j][k] = 
-					new TH1D(hName,"",nMassBins,massbins);
-				if(j==1)hist[i][j][k] = 
-					new TH1D(hName,"",nRapidityBins,rapiditybins);
-				if(j==2)hist[i][j][k] = 
-					new TH1D(hName,"",nPtBins,ptbins);
-				_hists.push_back(hist[i][j][k]);
-			}//end loop over processes
-		}//end loop over variables
-	}//end loop over samples
+	_hMassReco = new TH1D(histNameMass,"",nMassBins,massbins);
+	_hRapidityReco = new TH1D(histNameRapidity,"",nRapidityBins,rapiditybins);
+	_hPtReco = new TH1D(histNamePt,"",nPtBins,ptbins);
 }//end InitializeHistograms
 
 /////////////////////////
 //-----Get Weights-----//
 /////////////////////////
-double DrellYanAnalyzer::GetWeights(int index1,int index2)
+double DrellYanAnalyzer::GetWeights()
 {
+
+	//need to totally rethink how to use the correct weights per sample
+	//
+	//
+	//
+	//
 	using namespace DrellYanVariables;
-	Long64_t nEntries = _trees.at(index1).at(index2)->GetEntries();
-	SampleType sampleType = _sampleType;
+	Long64_t nEntries = _tree->GetEntries();
 	//-----Cross section-----//
 	vector<double> xSec;
-	if(sampleType==SAMPLE_LL) xSec = xSec_LL;
-	else if(sampleType==SAMPLE_TAU) xSec = xSec_LL;
+	if(_sampleType==SAMPLE_LL) xSec = xSec_LL;
+	else if(_sampleType==SAMPLE_TAU) xSec = xSec_LL;
 	double xSecWeight = 1.0;
-	if(_ntupType==V2P6 || SINGLE_FILE) xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
-	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec.at(index2)/nEntries;
+//	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
+//	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec.at(index2)/nEntries;
 
 	//-----Pileup Weight-----//
 	double puWeight = GetPUWeight();
 
 	//-----Gen Weights-----//
-	double sumGenWeight = GetGenWeightSum(index1,index2);
+	double sumGenWeight = GetGenWeightSum();
 	double genWeight = 1.0;
 	if(_ntupType==V2P6) genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;  
 
@@ -243,25 +228,45 @@ double DrellYanAnalyzer::GetWeights(int index1,int index2)
 	return weight;
 }
 
-double DrellYanAnalyzer::GetGenWeightSum(int index1,int index2)
+double DrellYanAnalyzer::GetGenWeightSum()
 {
 	using namespace DrellYanVariables;
-	SampleType sampleType = _sampleType;
+
+
+	TTimeStamp ts_start;
+	cout << endl;
+	cout << "****************************************" << endl;
+	cout << "Getting gen weights :" << endl;
+	cout << "[Start Time(local time): " << ts_start.AsString("l") << "]" << endl;
+	TStopwatch totaltime;
+	totaltime.Start();
 
 	double sumGenWeight = 0.0;
 	double sumRawGenWeight = 0.0;
 	double varGenWeight = 0.0;
 	double genWeight;
-	Long64_t nEntries = _trees.at(index1).at(index2)->GetEntries();
 	Long64_t localEntry;
-	for(Long64_t i=0;i<nEntries;i++){
-		localEntry = _trees.at(index1).at(index2)->LoadTree(i);
+	for(Long64_t i=0;i<_nEvents;i++){
+		localEntry = _tree->LoadTree(i);
 		b_GENEvt_weight->GetEntry(localEntry);
 		genWeight = GENEvt_weight/fabs(GENEvt_weight);//normalized genweight
 		sumGenWeight += genWeight;
 		varGenWeight += GENEvt_weight*GENEvt_weight;//variance of genweights
 		sumRawGenWeight += GENEvt_weight;
+		Counter(i,_nEvents);
 	}
+	totaltime.Stop();
+	Double_t TotalCPURunTime = totaltime.CpuTime();
+	Double_t TotalRunTime = totaltime.RealTime();
+	TTimeStamp ts_end;
+	cout << endl;
+	cout << "End getting gen weights:" << endl;
+	cout << "**************************************************************************" << endl;
+	cout << "Total CPU RunTime: " << TotalCPURunTime << " seconds" << endl;
+	cout << "Total Real RunTime: " << TotalRunTime << " seconds" << endl;
+	cout << "[End Time(local time): " << ts_end.AsString("l") << "]" << endl;
+	cout << "**************************************************************************" << endl;
+	cout << endl;
 	return sumGenWeight;
 }//end GetGenWeight
 
@@ -279,232 +284,240 @@ double DrellYanAnalyzer::GetPUWeight()
 int DrellYanAnalyzer::EventLoop()
 {
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
-	SampleType sampleType = _sampleType;
+
 
 	InitializeHistograms();
+
+	//Initialize lepton indices
 	int iHard1,iHard2;
 	int iFSR1,iFSR2;
 	int iDressed1,iDressed2;
 	int iLep1,iLep2;
+
+	//Initialize lepton mass variable
 	double lMass;
-	Long64_t eventCount = 0;
-	if(lepType==ELE) lMass = eMass;
-	else if(lepType==MUON) lMass = muMass;
+
+	//Define lMass for electrons or muons
+	if(_lepType==ELE) lMass = eMass;
+	else if(_lepType==MUON) lMass = muMass;
 	else{
 		cout << "Error in EventLoop(): Need to specify ELE or MUON" << endl;
 		 return 0;
 	}
-	//Loop over all samples, i.e. DYtoLL, Fakes, data, etc.
-	for(int i=0;i<_nSampleTypes;i++){
-		int nFiles = _trees.at(i).size();
-		Long64_t totalEvents = _nEvents;
-		bool isMC = true;
-		vector<TString> fileList;
-		if(_sampleType==SAMPLE_LL) fileList = _files_LL; 
-		//Loop over files within a sample
-		for(int j=0;j<nFiles;j++){
-			cout << "Processing file: " << fileList.at(j) << endl;
-			TBranch*testBranch = (TBranch*)_trees.at(i).at(j)->
-				GetListOfBranches()->FindObject("GENEvt_weight");
-			if(!testBranch) isMC = false; 
-			Long64_t nentries = _trees.at(i).at(j)->GetEntries();
-			
-			//cross section weights
-			vector<double> xSec;
-                        if(sampleType==SAMPLE_LL) xSec = xSec_LL;
-                        else if(sampleType==SAMPLE_TAU) xSec = xSec_LL;
-			double xSecWeight = 1.0;
-			if(_ntupType==TEST) 
-				xSecWeight = dataLuminosity*xSec.at(j)/nentries;
-			else xSecWeight = dataLuminosity*xSec.at(j)/1.0;
 
-			//Gen weights
-			double genWeight = 1.0;
-			double sumGenWeight = 1.0;
-			double genEvtWeight;
-			double absGenEvtWeight;
-			double evtWeightRatio;
-			if(_ntupType!=TEST && isMC){ 
-				sumGenWeight = GetGenWeightSum(i,j);
-				genEvtWeight = GENEvt_weight;
-				absGenEvtWeight = fabs(GENEvt_weight);
-				evtWeightRatio = genEvtWeight/absGenEvtWeight;
-				genWeight = evtWeightRatio/sumGenWeight;  
+	//Determine if tree is MC or data
+	bool isMC = true;
+	TBranch*testBranch = (TBranch*)_tree->
+		GetListOfBranches()->FindObject("GENEvt_weight");
+	if(!testBranch) isMC = false; 
+	Long64_t nentries = _tree->GetEntries();
+	
+	//cross section weights
+	vector<double> xSec;
+	if(_sampleType==SAMPLE_LL) xSec = xSec_LL;
+	else if(_sampleType==SAMPLE_TAU) xSec = xSec_LL;
+
+	//Initialize weights
+	double xSecWeight = 1.0;
+	double genWeight = 1.0;
+	double puWeight = 1.0;
+
+//	if(_ntupType==TEST) 
+//		xSecWeight = dataLuminosity*xSec.at(j)/nentries;
+//	else xSecWeight = dataLuminosity*xSec.at(j)/1.0;
+
+	//Gen weights
+	double sumGenWeight;
+	double genEvtWeight;
+	double absGenEvtWeight;
+	double evtWeightRatio;
+	if(_ntupType!=TEST && isMC){ 
+		sumGenWeight = GetGenWeightSum();
+		genEvtWeight = GENEvt_weight;
+		absGenEvtWeight = fabs(GENEvt_weight);
+		evtWeightRatio = genEvtWeight/absGenEvtWeight;
+		genWeight = evtWeightRatio/sumGenWeight;  
+	}
+
+	//Loop over all events in the loaded tree
+	TTimeStamp ts_start;
+	cout << endl;
+	cout << "********************************" << endl;
+	cout << "Begin EventLoop:" << endl;
+	cout << "[Start Time(local time): " << ts_start.AsString("l") << "]" << endl;
+	TStopwatch totaltime;
+	totaltime.Start();
+	for(Long64_t iEntry=0;iEntry<_nEvents;iEntry++){
+
+		//Initialize variables such that if they are not assigned a value 
+		//in the loop, they will be in the underflow bin of their histogram
+
+		//hard process variables
+		double hardPt1 		= -1000;
+		double hardPt2 		= -1000;
+		double hardEta1 	= -1000;
+		double hardEta2 	= -1000;
+		double hardPhi1 	= -1000;
+		double hardPhi2 	= -1000; 
+		double invMassHard 	= -1000;
+		double rapidityHard 	= -1000;
+		double ptHard 		= -1000;
+		
+		//FSR variables
+		double fsrPt1 		= -1000;
+		double fsrPt2 		= -1000;
+		double fsrEta1 		= -1000;
+		double fsrEta2 		= -1000;
+		double fsrPhi1 		= -1000;
+		double fsrPhi2 		= -1000; 
+		double invMassFSR 	= -1000;
+		double rapidityFSR 	= -1000;
+		double ptFSR 		= -1000;
+
+		//Reco variables
+		double recoPt1 		= -1000;
+		double recoPt2 		= -1000;
+		double recoEta1 	= -1000;
+		double recoEta2 	= -1000;
+		double recoPhi1 	= -1000;
+		double recoPhi2 	= -1000; 
+		double invMassReco 	= -1000;
+		double rapidityReco 	= -1000;
+		double ptReco 		= -1000;
+
+		//Pruned variables
+		double prunedPt1 	= -1000;
+		double prunedPt2 	= -1000;
+		double prunedEta1 	= -1000;
+		double prunedEta2 	= -1000;
+		double prunedPhi1 	= -1000;
+		double prunedPhi2 	= -1000; 
+		double invMassPruned 	= -1000;
+		double rapidityPruned 	= -1000;
+		double ptPruned 	= -1000;
+
+		//Get event from tree
+		_tree->GetEntry(iEntry);
+
+		//Calculate pileup weight
+	//	double puWeight = GetPUWeight();
+		//Get gen level leptons
+		int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
+						  iFSR1,iFSR2);
+		//Get reco level leptons
+		int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
+
+		if(nDileptonsGen==1){
+			hardPt1  = GENLepton_pT[iHard1];
+			hardEta1 = GENLepton_eta[iHard1];
+			hardPhi1 = GENLepton_phi[iHard1];
+			hardPt2  = GENLepton_pT[iHard2];
+			hardEta2 = GENLepton_eta[iHard2];
+			hardPhi2 = GENLepton_phi[iHard2];
+
+			fsrPt1  = GENLepton_pT[iFSR1];
+			fsrEta1 = GENLepton_eta[iFSR1];
+			fsrPhi1 = GENLepton_phi[iFSR1];
+			fsrPt2  = GENLepton_pT[iFSR2];
+			fsrEta2 = GENLepton_eta[iFSR2];
+			fsrPhi2 = GENLepton_phi[iFSR2];
+
+			//This is temporary
+			//Still need to write a function
+			//To calculate pruned leptons
+			prunedPt1  = GENLepton_pT[iHard1];
+			prunedEta1 = GENLepton_eta[iHard1];
+			prunedPhi1 = GENLepton_phi[iHard1];
+			prunedPt2  = GENLepton_pT[iHard2];
+			prunedEta2 = GENLepton_eta[iHard2];
+			prunedPhi2 = GENLepton_phi[iHard2];
+
+			if(_lepType==ELE){
+				recoPt1  = Electron_pT[iLep1];
+				recoEta1 = Electron_eta[iLep1];
+				recoPhi1 = Electron_phi[iLep1];
+				recoPt2  = Electron_pT[iLep2];
+				recoEta2 = Electron_eta[iLep2];
+				recoPhi2 = Electron_phi[iLep2];
+			}
+			else if(_lepType==MUON){
+				recoPt1  = Muon_pT[iLep1];
+				recoEta1 = Muon_eta[iLep1];
+				recoPhi1 = Muon_phi[iLep1];
+				recoPt2  = Muon_pT[iLep2];
+				recoEta2 = Muon_eta[iLep2];
+				recoPhi2 = Muon_phi[iLep2];
+			}
+			else{
+				cout << "ERROR in Event Loop!" << endl;
+				cout << "Lepton type not specified" << endl;
+				return 0;
 			}
 
-			//Loop over all events in the loaded tree
-			for(Long64_t iEntry=0;iEntry<nentries;iEntry++){
-				eventCount++;
+			//hard process quantities
+			invMassHard   = GetInvMass(hardPt1,hardEta1,hardPhi1,
+				 		   hardPt2,hardEta2,hardPhi2);
+			rapidityHard = GetRapidity(hardPt1,hardEta1,hardPhi1,
+						   hardPt2,hardEta2,hardPhi2);
+			ptHard 	           = GetPt(hardPt1,hardEta1,hardPhi1,
+				       		   hardPt2,hardEta2,hardPhi2);
 
-				//hard process variables
-				double hardPt1 		= -1000;
-				double hardPt2 		= -1000;
-				double hardEta1 	= -1000;
-				double hardEta2 	= -1000;
-				double hardPhi1 	= -1000;
-				double hardPhi2 	= -1000; 
-				double invMassHard 	= -1000;
-				double rapidityHard 	= -1000;
-				double ptHard 		= -1000;
-				
-				//FSR variables
-				double fsrPt1 		= -1000;
-				double fsrPt2 		= -1000;
-				double fsrEta1 		= -1000;
-				double fsrEta2 		= -1000;
-				double fsrPhi1 		= -1000;
-				double fsrPhi2 		= -1000; 
-				double invMassFSR 	= -1000;
-				double rapidityFSR 	= -1000;
-				double ptFSR 		= -1000;
+			//FSR quantities
+			invMassFSR   = GetInvMass(fsrPt1,fsrEta1,fsrPhi1,
+						  fsrPt2,fsrEta2,fsrPhi2);
+			rapidityFSR = GetRapidity(fsrPt1,fsrEta1,fsrPhi1,
+						  fsrPt2,fsrEta2,fsrPhi2);
+			ptFSR 		  = GetPt(fsrPt1,fsrEta1,fsrPhi1,
+				      		  fsrPt2,fsrEta2,fsrPhi2);
 
-				//Reco variables
-				double recoPt1 		= -1000;
-				double recoPt2 		= -1000;
-				double recoEta1 	= -1000;
-				double recoEta2 	= -1000;
-				double recoPhi1 	= -1000;
-				double recoPhi2 	= -1000; 
-				double invMassReco 	= -1000;
-				double rapidityReco 	= -1000;
-				double ptReco 		= -1000;
+			//reco quantities
+			invMassReco   = GetInvMass(recoPt1,recoEta1,recoPhi1,
+						   recoPt2,recoEta2,recoPhi2);
+			rapidityReco = GetRapidity(recoPt1,recoEta1,recoPhi1,
+						   recoPt2,recoEta2,recoPhi2);
+			ptReco 		   = GetPt(recoPt1,recoEta1,recoPhi1,
+				       		   recoPt2,recoEta2,recoPhi2);
 
-				//Pruned variables
-				double prunedPt1 	= -1000;
-				double prunedPt2 	= -1000;
-				double prunedEta1 	= -1000;
-				double prunedEta2 	= -1000;
-				double prunedPhi1 	= -1000;
-				double prunedPhi2 	= -1000; 
-				double invMassPruned 	= -1000;
-				double rapidityPruned 	= -1000;
-				double ptPruned 	= -1000;
+			//Pruned quantities
+			invMassPruned   = GetInvMass(prunedPt1,prunedEta1,
+						     prunedPhi1,prunedPt2,
+						     prunedEta2,prunedPhi2);
+			rapidityPruned = GetRapidity(prunedPt1,prunedEta1,
+						     prunedPhi1,prunedPt2,
+						     prunedEta2,prunedPhi2);
+			ptPruned 	     = GetPt(prunedPt1,prunedEta1,
+					 	     prunedPhi1,prunedPt2,
+					 	     prunedEta2,prunedPhi2);
+		}//end if nDileptons>0
+	
+		double weights = xSecWeight*genWeight*puWeight;
 
-				//Get events from tree
-				_trees.at(i).at(j)->GetEntry(iEntry);
+		//Fill all histograms
+		_hMassHardProcess->Fill(invMassHard,weights);
+		_hRapidityHardProcess->Fill(rapidityHard,weights);
+		_hPtHardProcess->Fill(ptHard,weights);
+		_hMassReco->Fill(invMassReco,weights);
+		_hRapidityReco->Fill(rapidityReco,weights);
+		_hPtReco->Fill(ptReco,weights);
 
-				//Calculate pileup weight
-				double puWeight = GetPUWeight();
+		Counter(iEntry,_nEvents);
+	}//end event loop
 
-				//Get gen level leptons
-				int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
-					  	          	  iFSR1,iFSR2);
-				//Get reco level leptons
-				int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
-
-				if(nDileptonsGen==1 && nDileptonsReco==1){
-					hardPt1  = GENLepton_pT[iHard1];
-					hardEta1 = GENLepton_eta[iHard1];
-					hardPhi1 = GENLepton_phi[iHard1];
-					hardPt2  = GENLepton_pT[iHard2];
-					hardEta2 = GENLepton_eta[iHard2];
-					hardPhi2 = GENLepton_phi[iHard2];
-
-					fsrPt1  = GENLepton_pT[iFSR1];
-					fsrEta1 = GENLepton_eta[iFSR1];
-					fsrPhi1 = GENLepton_phi[iFSR1];
-					fsrPt2  = GENLepton_pT[iFSR2];
-					fsrEta2 = GENLepton_eta[iFSR2];
-					fsrPhi2 = GENLepton_phi[iFSR2];
-
-					//This is temporary
-					//Still need to write a function
-					//To calculate pruned leptons
-					prunedPt1  = GENLepton_pT[iHard1];
-					prunedEta1 = GENLepton_eta[iHard1];
-					prunedPhi1 = GENLepton_phi[iHard1];
-					prunedPt2  = GENLepton_pT[iHard2];
-					prunedEta2 = GENLepton_eta[iHard2];
-					prunedPhi2 = GENLepton_phi[iHard2];
-
-					if(lepType==ELE){
-						recoPt1  = Electron_pT[iLep1];
-						recoEta1 = Electron_eta[iLep1];
-						recoPhi1 = Electron_phi[iLep1];
-						recoPt2  = Electron_pT[iLep2];
-						recoEta2 = Electron_eta[iLep2];
-						recoPhi2 = Electron_phi[iLep2];
-					}
-					else if(lepType==MUON){
-						recoPt1  = Muon_pT[iLep1];
-						recoEta1 = Muon_eta[iLep1];
-						recoPhi1 = Muon_phi[iLep1];
-						recoPt2  = Muon_pT[iLep2];
-						recoEta2 = Muon_eta[iLep2];
-						recoPhi2 = Muon_phi[iLep2];
-					}
-					else{
-						cout << "ERROR in Event Loop!" << endl;
-						cout << "Lepton type not specified" << endl;
-						return 0;
-					}
-
-					//hard process quantities
-					invMassHard = GetInvMass(hardPt1,hardEta1,hardPhi1,
-							       	 hardPt2,hardEta2,hardPhi2);
-					rapidityHard = GetRapidity(hardPt1,hardEta1,hardPhi1,
-								   hardPt2,hardEta2,hardPhi2);
-					ptHard = GetPt(hardPt1,hardEta1,hardPhi1,
-						       hardPt2,hardEta2,hardPhi2);
-
-					//FSR quantities
-					invMassFSR = GetInvMass(fsrPt1,fsrEta1,fsrPhi1,
-							       	fsrPt2,fsrEta2,fsrPhi2);
-					rapidityFSR = GetRapidity(fsrPt1,fsrEta1,fsrPhi1,
-								  fsrPt2,fsrEta2,fsrPhi2);
-					ptFSR = GetPt(fsrPt1,fsrEta1,fsrPhi1,
-						      fsrPt2,fsrEta2,fsrPhi2);
-
-					//reco quantities
-					invMassReco = GetInvMass(recoPt1,recoEta1,recoPhi1,
-							       	 recoPt2,recoEta2,recoPhi2);
-					rapidityReco = GetRapidity(recoPt1,recoEta1,recoPhi1,
-								   recoPt2,recoEta2,recoPhi2);
-					ptReco = GetPt(recoPt1,recoEta1,recoPhi1,
-						       recoPt2,recoEta2,recoPhi2);
-
-					//Pruned quantities
-					invMassPruned = GetInvMass(prunedPt1,prunedEta1,
-								   prunedPhi1,prunedPt2,
-								   prunedEta2,prunedPhi2);
-					rapidityPruned = GetRapidity(prunedPt1,prunedEta1,
-								   prunedPhi1,prunedPt2,
-								   prunedEta2,prunedPhi2);
-					ptPruned = GetPt(prunedPt1,prunedEta1,
-						   	 prunedPhi1,prunedPt2,
-						         prunedEta2,prunedPhi2);
-				}//end if nDileptons>0
-			
-				double weights = xSecWeight*genWeight*puWeight;
-				vector<double> var = {
-					invMassHard,
-					invMassFSR,
-					invMassReco,
-					invMassPruned,
-					rapidityHard,
-					rapidityFSR,
-					rapidityReco,
-					rapidityPruned,
-					ptHard,
-					ptFSR,
-					ptReco,
-					ptPruned
-				};
-				int varSize = var.size();
-				int l=0;
-
-				//Loop over histograms
-				for(int k=0;k<_nHists;k++){
-					_hists.at(k)->Fill(var.at(l),weights);
-					l++;
-					if(l>varSize) l=0;
-				}//end loop over histograms
-				Counter(eventCount,totalEvents);
-			}//end event loop
-		}//end loop over files
-	}//end loop over samples						
+	//Save histograms to a root file
 	SaveResults();
+
+	totaltime.Stop();
+	Double_t TotalCPURunTime = totaltime.CpuTime();
+	Double_t TotalRunTime = totaltime.RealTime();
+	TTimeStamp ts_end;
+	cout << endl;
+	cout << "Ending EventLoop:" << endl;
+	cout << "**************************************************************************" << endl;
+	cout << "Total CPU RunTime: " << TotalCPURunTime << " seconds" << endl;
+	cout << "Total Real RunTime: " << TotalRunTime << " seconds" << endl;
+	cout << "[End Time(local time): " << ts_end.AsString("l") << "]" << endl;
+	cout << "**************************************************************************" << endl;
+	cout << endl;
 	return 1;
 }//end EventLoop
 
@@ -512,10 +525,9 @@ int DrellYanAnalyzer::GetGenLeptons(int &iHard1,int &iHard2,
 				    int &iFSR1,int &iFSR2)
 {
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
 	int lepID = 0;
-	if      (lepType==ELE)  lepID = 11;
-	else if (lepType==MUON) lepID = 13;
+	if      (_lepType==ELE)  lepID = 11;
+	else if (_lepType==MUON) lepID = 13;
 	else {
 		cout << "ERROR: Appropriate lepton not selected." << endl;
 		cout << "NOTE: This analysis does not handle taus." << endl;
@@ -551,9 +563,8 @@ int DrellYanAnalyzer::GetRecoLeptons(int &leadLep,int &subLep)
 	//I'm uncertain about how &leadLep will be connected with &leadEle or &leadMu
 	//Need to remember to check this behavior when I can
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
-	if(lepType==ELE) return GetRecoElectrons(leadLep,subLep);
-	else if(lepType==MUON) return GetRecoMuons(leadLep,subLep);
+	if(_lepType==ELE) return GetRecoElectrons(leadLep,subLep);
+	else if(_lepType==MUON) return GetRecoMuons(leadLep,subLep);
 	else {
 		cout << "Must choose ELE or MUON for lepType" << endl;
 		return 0;
@@ -671,20 +682,19 @@ bool DrellYanAnalyzer::PassAcceptance(double pt1,double pt2,double eta1,double e
 bool DrellYanAnalyzer::PassHLT()
 {
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
 	TString trigName;
 	TString triggerUsed;
 	int trigNameSize = pHLT_trigName->size();
 	bool passHLT = false;
 	for(int iHLT=0;iHLT<trigNameSize;iHLT++) {
 		trigName = pHLT_trigName->at(iHLT);
-		if(lepType==ELE){
+		if(_lepType==ELE){
 			if(trigName.CompareTo(electronTrigger)==0 && HLT_trigFired[iHLT]==1){
 				passHLT = true;
 				break;
 			}//end if trigName...
 		}//end if lepType
-		else if(lepType==MUON){
+		else if(_lepType==MUON){
 			if((trigName.CompareTo(muonTrigger1)==0 || 
 			    trigName.CompareTo(muonTrigger2)==0 ) && 
 			    HLT_trigFired[iHLT]==1){
@@ -699,9 +709,8 @@ bool DrellYanAnalyzer::PassHLT()
 bool DrellYanAnalyzer::PassGenToRecoMatch(int genIndex,int &recoIndex)
 {
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
-	if(lepType==ELE) return PassGenToRecoMatchEle(genIndex,recoIndex);
-	if(lepType==MUON) return PassGenToRecoMatchMu(genIndex,recoIndex);
+	if(_lepType==ELE) return PassGenToRecoMatchEle(genIndex,recoIndex);
+	if(_lepType==MUON) return PassGenToRecoMatchMu(genIndex,recoIndex);
 	else{
 		cout << "Error in DrellYanAnalyzer::PassGenToRecoMatch()!" << endl;
 		cout << "lepType not properly defined" << endl;
@@ -719,7 +728,6 @@ double DrellYanAnalyzer::GetVertexChi2(int index1,int index2)
 bool DrellYanAnalyzer::PassGenToRecoMatchEle(int genIndex,int &recoIndex)
 {
 	using namespace DrellYanVariables;
-	LepType lepType = _lepType;
 	double dR,deta,dphi;
 	float dRMin = 100000;
 	recoIndex=-1;
@@ -798,11 +806,11 @@ bool DrellYanAnalyzer::PassMuonIsolation(int index)
 void DrellYanAnalyzer::SaveResults()
 {
 	using namespace DrellYanVariables;
-	TString filesave = "DYHists";
+	TString filesave = "output_data/DYHists";
 	if(_ntupType==V2P6) filesave+= "_v2p6";
 	else if (_ntupType==V2P3) filesave+= "_v2p3";
 	else if(_ntupType==TEST) filesave += "_TEST";
-	else if(_ntupType==SINGLE_TEST) filesave += "_SingleSampleTest";
+	else if(_ntupType==SINGLE_FILE) filesave += "_SingleSampleTest";
 	else{
 		cout << "********************************************************" << endl;
 		cout << "ERROR in SaveResults()" << endl;
@@ -827,6 +835,21 @@ void DrellYanAnalyzer::SaveResults()
 		cout << "*****************************************************" << endl;
 	}
 
+	if(_fileName==DYLL_M10to50_EE) filesave += "_DYLL_M10to50";
+	else if(_fileName==DYLL_M50to100_EE)	filesave += "_DYLL_M50to100";
+        else if(_fileName==DYLL_M100to200_EE)filesave += "_DYLL_M100to200";
+        else if(_fileName==DYLL_M200to400_EE)filesave += "_DYLL_M200to400";
+        else if(_fileName==DYLL_M400to500_EE)filesave += "_DYLL_M400to500";
+        else if(_fileName==DYLL_M500to700_EE)filesave += "_DYLL_M500to700";
+        else if(_fileName==DYLL_M700to800_EE)filesave += "_DYLL_M700to800";
+        else if(_fileName==DYLL_M800to1000_EE)filesave += "_DYLL_M800to1000";
+        else if(_fileName==DYLL_M1000to1500_EE)filesave += "_DYLL_M1000to1500";
+        else if(_fileName==DYLL_M1500to2000_EE) filesave += "_DYLL_M1500to2000";
+        else if(_fileName==DYLL_M2000to3000_EE) filesave += "_DYLL_M2000to3000";
+	else{
+		cout << "_FileToLoad not properly defined" << endl;
+		return;
+	}
 
 	if(_lepType==ELE) filesave += "_EE.root";
 	else if(_lepType==MUON) filesave += "_MuMu.root";
@@ -836,9 +859,12 @@ void DrellYanAnalyzer::SaveResults()
 	cout << "*********************************************************" << endl;
 
 	TFile*file = new TFile(filesave,"recreate");
-	for(int i=0;i<_nHists;i++){
-		_hists.at(i)->Write();
-	}
+	_hMassHardProcess->Write();
+	_hRapidityHardProcess->Write();
+	_hPtHardProcess->Write();
+	_hMassReco->Write();
+	_hRapidityReco->Write();
+	_hPtReco->Write();
 	file->Write();
 	file->Close();
 	return;

@@ -1,7 +1,7 @@
 
 universe		= Docker 
 executable              = ProcessDrellYan.sh 
-arguments               = $(arg1) $(arg2) $(arg3) 
+arguments               = $(arg1) $(arg2) $(arg3) $(arg4) $(arg5)
 transfer_input_files    = test.C,src/DrellYanAnalyzer.cc,include/DrellYanAnalyzer.hh,include/DrellYanVariables.h,ProcessDrellYan.py,rootlogon.C,data/pileup.root 
 
 +WantDocker = True
@@ -10,7 +10,8 @@ use_x509userproxy = true
 
 should_transfer_files   = YES 
 when_to_transfer_output = ON_EXIT
-error			= logs/error.$(Process).log
-output			= logs/output.$(Process).log
-log                     = logs/foo.$(Process).log
-queue
+transfer_output_files	= output_data
+error			= logs/error.$(arg4).log
+output			= logs/output.$(arg4).log
+log                     = logs/foo.$(arg4).log
+queue 

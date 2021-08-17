@@ -1,5 +1,5 @@
 
 {
 	gROOT->ProcessLine(".include include");
-	gROOT->ProcessLine(".L src/DrellYanAnalyzer.cc+");
+	gROOT->ProcessLine(".L DrellYanAnalyzer.cc+");
 }
