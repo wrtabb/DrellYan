@@ -48,7 +48,7 @@ int DrellYanAnalyzer::LoadTrees()
 	using namespace DrellYanVariables;
 	int returnCode = 1;
 	TTimeStamp ts_start;
-	cout << "Begin loading trees:" << endl;
+	cout << "Begin loading tree in file:" << _FileToLoad << endl;
 	cout << "[Start Time(local time): " << ts_start.AsString("l") << "]" << endl;
 	TStopwatch totaltime;
 	totaltime.Start();
@@ -72,6 +72,7 @@ int DrellYanAnalyzer::LoadTrees()
 	cout << endl;
 
 	_isMC = true;
+
 	//If tree does not contain GENEvt_weight, it is from data and not MC
 	TBranch*testBranch = (TBranch*)_tree->
 		GetListOfBranches()->FindObject("GENEvt_weight");
@@ -353,8 +354,6 @@ int DrellYanAnalyzer::EventLoop()
 
 	//Initialize lepton mass variable
 	double lMass;
-
-	//Define lMass for electrons or muons
 	if(_lepType==ELE) lMass = eMass;
 	else if(_lepType==MUON) lMass = muMass;
 	else{
@@ -362,10 +361,11 @@ int DrellYanAnalyzer::EventLoop()
 		 return 0;
 	}
 
-	//Initialize weights
+	//Initialize sample weight, which is the weight for the whole sample
+	//These include cross section weights and gen weights 
 	double sampleWeight = 1.0;
 	if(_isMC) sampleWeight = GetSampleWeights();
-	cout << "sample weight = " << sampleWeight << endl;
+
 	//Loop over all events in the loaded tree
 	TTimeStamp ts_start;
 	cout << endl;
@@ -437,6 +437,7 @@ int DrellYanAnalyzer::EventLoop()
 		_tree->GetEntry(iEntry);
 
 		//Calculate event weights
+		//These include pileup weights and efficiency scale factors
 		double eventWeight = 1.0;
 		if(_isMC) eventWeight = GetEventWeights();
 
@@ -447,7 +448,7 @@ int DrellYanAnalyzer::EventLoop()
 		//Get reco level leptons
 		int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
 
-		if(nDileptonsGen==1){
+		if(nDileptonsGen==1 || !_isMC){
 			hardPt1  = GENLepton_pT[iHard1];
 			hardEta1 = GENLepton_eta[iHard1];
 			hardPhi1 = GENLepton_phi[iHard1];
@@ -879,17 +880,29 @@ void DrellYanAnalyzer::SaveResults()
 		cout << "*****************************************************" << endl;
 	}
 
-	if(_fileName==DYLL_M10to50_EE) filesave += "_DYLL_M10to50";
+	//MC Electrons
+	if(_fileName==DYLL_M10to50_EE)          filesave += "_DYLL_M10to50";
 	else if(_fileName==DYLL_M50to100_EE)	filesave += "_DYLL_M50to100";
-        else if(_fileName==DYLL_M100to200_EE)filesave += "_DYLL_M100to200";
-        else if(_fileName==DYLL_M200to400_EE)filesave += "_DYLL_M200to400";
-        else if(_fileName==DYLL_M400to500_EE)filesave += "_DYLL_M400to500";
-        else if(_fileName==DYLL_M500to700_EE)filesave += "_DYLL_M500to700";
-        else if(_fileName==DYLL_M700to800_EE)filesave += "_DYLL_M700to800";
-        else if(_fileName==DYLL_M800to1000_EE)filesave += "_DYLL_M800to1000";
-        else if(_fileName==DYLL_M1000to1500_EE)filesave += "_DYLL_M1000to1500";
+        else if(_fileName==DYLL_M100to200_EE)   filesave += "_DYLL_M100to200";
+        else if(_fileName==DYLL_M200to400_EE)   filesave += "_DYLL_M200to400";
+        else if(_fileName==DYLL_M400to500_EE)   filesave += "_DYLL_M400to500";
+        else if(_fileName==DYLL_M500to700_EE)   filesave += "_DYLL_M500to700";
+        else if(_fileName==DYLL_M700to800_EE)   filesave += "_DYLL_M700to800";
+        else if(_fileName==DYLL_M800to1000_EE)  filesave += "_DYLL_M800to1000";
+        else if(_fileName==DYLL_M1000to1500_EE) filesave += "_DYLL_M1000to1500";
         else if(_fileName==DYLL_M1500to2000_EE) filesave += "_DYLL_M1500to2000";
         else if(_fileName==DYLL_M2000to3000_EE) filesave += "_DYLL_M2000to3000";
+
+	//Data
+	if(_fileName==DoubleEG_RunB)      filesave += "_DoubleEG_RunB";
+	else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunC";
+        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunD";
+        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunE";
+        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunF";
+        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunG";
+        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunHver2";
+        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunHver3";
+
 	else{
 		cout << "_FileToLoad not properly defined" << endl;
 		return;
@@ -944,6 +957,16 @@ TString DrellYanAnalyzer::GetSampleName()
         else if(_fileName==DYLL_M1000to1500_MuMu) sampleName += "DYLL_M1000to1500_MuMu";
         else if(_fileName==DYLL_M1500to2000_MuMu) sampleName += "DYLL_M1500to2000_MuMu";
         else if(_fileName==DYLL_M2000to3000_MuMu) sampleName += "DYLL_M2000to3000_MuMu";
+
+	//Data
+	else if(_fileName==DoubleEG_RunB) sampleName += "crab_DoubleEG_RunB";
+	else if(_fileName==DoubleEG_RunC) sampleName += "crab_DoubleEG_RunC";
+	else if(_fileName==DoubleEG_RunD) sampleName += "crab_DoubleEG_RunD";
+	else if(_fileName==DoubleEG_RunE) sampleName += "crab_DoubleEG_RunE";
+	else if(_fileName==DoubleEG_RunF) sampleName += "crab_DoubleEG_RunF";
+	else if(_fileName==DoubleEG_RunG) sampleName += "crab_DoubleEG_RunG";
+	else if(_fileName==DoubleEG_RunHver2) sampleName += "crab_DoubleEG_RunHver2";
+	else if(_fileName==DoubleEG_RunHver3) sampleName += "crab_DoubleEG_RunHver3";
 	else{
 		cout << "FileName not properly chosen" << endl;
 	}

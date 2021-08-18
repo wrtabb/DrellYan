@@ -5,7 +5,7 @@ sampleType=SAMPLE_LL
 runType=V2P6
 root_file=(
 #	DYLL_M10to50_EE
-	DYLL_M50to100_EE
+#	DYLL_M50to100_EE
 #	DYLL_M100to200_EE
 #	DYLL_M200to400_EE
 #	DYLL_M400to500_EE
@@ -15,6 +15,14 @@ root_file=(
 #	DYLL_M1000to1500_EE
 #	DYLL_M1500to2000_EE
 #	DYLL_M2000to3000_EE
+	DoubleEG_RunB
+	DoubleEG_RunC
+	DoubleEG_RunD
+	DoubleEG_RunE
+	DoubleEG_RunF
+	DoubleEG_RunG
+	DoubleEG_RunHver2
+	DoubleEG_RunHver3
 )
 
 for index in ${!root_file[*]}; do
