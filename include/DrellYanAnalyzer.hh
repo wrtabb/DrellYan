@@ -64,7 +64,8 @@ class DrellYanAnalyzer
 
 
 		//calculations
-		double GetWeights();
+		double GetSampleWeights();
+		double GetEventWeights();
 		double GetGenWeightSum();
 		double GetPUWeight();
 		double GetInvMass(double pt1,double eta1,double phi1,

@@ -72,6 +72,7 @@ int DrellYanAnalyzer::LoadTrees()
 	cout << endl;
 
 	_isMC = true;
+	//If tree does not contain GENEvt_weight, it is from data and not MC
 	TBranch*testBranch = (TBranch*)_tree->
 		GetListOfBranches()->FindObject("GENEvt_weight");
 	if(!testBranch) _isMC = false; 
@@ -225,26 +226,52 @@ void DrellYanAnalyzer::DefineHistogramProperties(TH1*hist)
 /////////////////////////
 //-----Get Weights-----//
 /////////////////////////
-double DrellYanAnalyzer::GetWeights()
+double DrellYanAnalyzer::GetSampleWeights()
 {
-
-	//need to totally rethink how to use the correct weights per sample
-	//
-	//
-	//
-	//
+	// This function returns the weights which are determeined per sample
+	// meaing cross section and gen weights
+	// The pileup weights and efficiency scale factors are calculated separately 
+	// since they are by event
 	using namespace DrellYanVariables;
-	Long64_t nEntries = _tree->GetEntries();
 	//-----Cross section-----//
-	vector<double> xSec;
-	if(_sampleType==SAMPLE_LL) xSec = xSec_LL;
-	else if(_sampleType==SAMPLE_TAU) xSec = xSec_LL;
 	double xSecWeight = 1.0;
-//	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec.at(index2)/1.0;
-//	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec.at(index2)/nEntries;
-
-	//-----Pileup Weight-----//
-	double puWeight = GetPUWeight();
+	double xSec = 1.0;
+	if(_fileName==DYLL_M10to50_EE ||
+	   _fileName==DYLL_M10to50_MuMu ||
+	   _fileName==DYLL_M10to50_TauTau) xSec = xSec_LL.at(0);
+	else if(_fileName==DYLL_M50to100_EE ||
+		_fileName==DYLL_M50to100_MuMu ||
+		_fileName==DYLL_M50to100_TauTau) xSec = xSec_LL.at(1);
+	else if(_fileName==DYLL_M100to200_EE ||
+		_fileName==DYLL_M100to200_MuMu ||
+		_fileName==DYLL_M100to200_TauTau) xSec = xSec_LL.at(2);
+	else if(_fileName==DYLL_M200to400_EE ||
+		_fileName==DYLL_M200to400_MuMu ||
+		_fileName==DYLL_M200to400_TauTau) xSec = xSec_LL.at(3);
+	else if(_fileName==DYLL_M400to500_EE ||
+		_fileName==DYLL_M400to500_MuMu ||
+		_fileName==DYLL_M400to500_TauTau) xSec = xSec_LL.at(4);
+	else if(_fileName==DYLL_M500to700_EE ||
+		_fileName==DYLL_M500to700_MuMu ||
+		_fileName==DYLL_M500to700_TauTau) xSec = xSec_LL.at(5);
+	else if(_fileName==DYLL_M700to800_EE ||
+		_fileName==DYLL_M700to800_MuMu ||
+		_fileName==DYLL_M700to800_TauTau) xSec = xSec_LL.at(6);
+	else if(_fileName==DYLL_M800to1000_EE ||
+		_fileName==DYLL_M800to1000_MuMu ||
+		_fileName==DYLL_M800to1000_TauTau) xSec = xSec_LL.at(7);
+	else if(_fileName==DYLL_M1000to1500_EE ||
+		_fileName==DYLL_M1000to1500_MuMu ||
+		_fileName==DYLL_M1000to1500_TauTau) xSec = xSec_LL.at(8);
+	else if(_fileName==DYLL_M1500to2000_EE ||
+		_fileName==DYLL_M1500to2000_MuMu ||
+		_fileName==DYLL_M1500to2000_TauTau) xSec = xSec_LL.at(9);
+	else if(_fileName==DYLL_M2000to3000_EE ||
+		_fileName==DYLL_M2000to3000_MuMu ||
+		_fileName==DYLL_M2000to3000_TauTau) xSec = xSec_LL.at(10);
+	
+	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec;
+	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec/_nEvents;
 
 	//-----Gen Weights-----//
 	double sumGenWeight = GetGenWeightSum();
@@ -252,9 +279,18 @@ double DrellYanAnalyzer::GetWeights()
 	if(_ntupType==V2P6) genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;  
 
 	//-----Total Weight-----//
-	double weight = xSecWeight*genWeight*puWeight;
+	double weight = xSecWeight*genWeight;
 	return weight;
-}
+}//end GetSampleWeights()
+
+double DrellYanAnalyzer::GetEventWeights()
+{
+	using namespace DrellYanVariables;
+	double puWeight = GetPUWeight();
+	double sfWeight = 1.0;
+
+	return sfWeight*puWeight;	
+}//end GetEventWeights()
 
 double DrellYanAnalyzer::GetGenWeightSum()
 {
@@ -312,15 +348,8 @@ double DrellYanAnalyzer::GetPUWeight()
 int DrellYanAnalyzer::EventLoop()
 {
 	using namespace DrellYanVariables;
-
-
 	InitializeHistograms();
 
-	//Initialize lepton indices
-	int iHard1,iHard2;
-	int iFSR1,iFSR2;
-	int iDressed1,iDressed2;
-	int iLep1,iLep2;
 
 	//Initialize lepton mass variable
 	double lMass;
@@ -333,35 +362,10 @@ int DrellYanAnalyzer::EventLoop()
 		 return 0;
 	}
 
-	Long64_t nentries = _tree->GetEntries();
-	
-	//cross section weights
-	vector<double> xSec;
-	if(_sampleType==SAMPLE_LL) xSec = xSec_LL;
-	else if(_sampleType==SAMPLE_TAU) xSec = xSec_LL;
-
 	//Initialize weights
-	double xSecWeight = 1.0;
-	double genWeight = 1.0;
-	double puWeight = 1.0;
-
-//	if(_ntupType==TEST) 
-//		xSecWeight = dataLuminosity*xSec.at(j)/nentries;
-//	else xSecWeight = dataLuminosity*xSec.at(j)/1.0;
-
-	//Gen weights
-	double sumGenWeight;
-	double genEvtWeight;
-	double absGenEvtWeight;
-	double evtWeightRatio;
-	if(_ntupType!=TEST && _isMC){ 
-		sumGenWeight = GetGenWeightSum();
-		genEvtWeight = GENEvt_weight;
-		absGenEvtWeight = fabs(GENEvt_weight);
-		evtWeightRatio = genEvtWeight/absGenEvtWeight;
-		genWeight = evtWeightRatio/sumGenWeight;  
-	}
-
+	double sampleWeight = 1.0;
+	if(_isMC) sampleWeight = GetSampleWeights();
+	cout << "sample weight = " << sampleWeight << endl;
 	//Loop over all events in the loaded tree
 	TTimeStamp ts_start;
 	cout << endl;
@@ -419,14 +423,27 @@ int DrellYanAnalyzer::EventLoop()
 		double rapidityPruned 	= -1000;
 		double ptPruned 	= -1000;
 
+		//Initialize lepton indices
+		int iHard1    = -1;
+		int iHard2    = -1;
+		int iFSR1     = -1;
+		int iFSR2     = -1;
+		int iDressed1 = -1;
+		int iDressed2 = -1;
+		int iLep1     = -1;
+		int iLep2     = -1;
+
 		//Get event from tree
 		_tree->GetEntry(iEntry);
 
-		//Calculate pileup weight
-		puWeight = GetPUWeight();
+		//Calculate event weights
+		double eventWeight = 1.0;
+		if(_isMC) eventWeight = GetEventWeights();
+
 		//Get gen level leptons
 		int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
 						  iFSR1,iFSR2);
+
 		//Get reco level leptons
 		int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
 
@@ -494,12 +511,14 @@ int DrellYanAnalyzer::EventLoop()
 				      		  fsrPt2,fsrEta2,fsrPhi2);
 
 			//reco quantities
-			invMassReco   = GetInvMass(recoPt1,recoEta1,recoPhi1,
-						   recoPt2,recoEta2,recoPhi2);
-			rapidityReco = GetRapidity(recoPt1,recoEta1,recoPhi1,
-						   recoPt2,recoEta2,recoPhi2);
-			ptReco 		   = GetPt(recoPt1,recoEta1,recoPhi1,
-				       		   recoPt2,recoEta2,recoPhi2);
+			if(nDileptonsReco>0){
+				invMassReco   = GetInvMass(recoPt1,recoEta1,recoPhi1,
+							   recoPt2,recoEta2,recoPhi2);
+				rapidityReco = GetRapidity(recoPt1,recoEta1,recoPhi1,
+							   recoPt2,recoEta2,recoPhi2);
+				ptReco 		   = GetPt(recoPt1,recoEta1,recoPhi1,
+							   recoPt2,recoEta2,recoPhi2);
+			}
 
 			//Pruned quantities
 			invMassPruned   = GetInvMass(prunedPt1,prunedEta1,
@@ -513,8 +532,7 @@ int DrellYanAnalyzer::EventLoop()
 					 	     prunedEta2,prunedPhi2);
 		}//end if nDileptons>0
 	
-		double weights = xSecWeight*genWeight*puWeight;
-
+		double weights = sampleWeight*eventWeight;
 		//Fill all histograms
 		_hMassHardProcess->Fill(invMassHard,weights);
 		_hRapidityHardProcess->Fill(rapidityHard,weights);
@@ -541,6 +559,7 @@ int DrellYanAnalyzer::EventLoop()
 	cout << "[End Time(local time): " << ts_end.AsString("l") << "]" << endl;
 	cout << "**************************************************************************" << endl;
 	cout << endl;
+
 	return 1;
 }//end EventLoop
 
@@ -561,16 +580,18 @@ int DrellYanAnalyzer::GetGenLeptons(int &iHard1,int &iHard2,
 	for(int iLep=0;iLep<GENnPair;iLep++){
 		for(int jLep=iLep+1;jLep<GENnPair;jLep++){
 			//Lepton selection
-			if(!(abs(GENLepton_ID[iLep])==lepID&&abs(GENLepton_ID[jLep])==lepID)) 
-				continue;
-			//require opposite sign for electrons
-			if(GENLepton_ID[iLep]*GENLepton_ID[jLep]>0&&lepID==11) 
-				continue;
-			if(GENLepton_isHardProcess[iLep]==1&&GENLepton_isHardProcess[jLep]==1){
+			if(!(abs(GENLepton_ID[iLep])==lepID && 
+			     abs(GENLepton_ID[jLep])==lepID)) continue;
+			//require opposite sign
+			if(GENLepton_ID[iLep]*GENLepton_ID[jLep]>0) continue;
+			//Get leptons from hard process
+			if(GENLepton_isHardProcess[iLep]==1 && 
+			   GENLepton_isHardProcess[jLep]==1){
 				iHard1 = iLep;
 				iHard2 = jLep;
 				nDileptons++;
 			}//end if hard process
+			//Get leptons from FSR
 			if(GENLepton_fromHardProcessFinalState[iLep]==1 &&
 			GENLepton_fromHardProcessFinalState[jLep]==1){
 				iFSR1 = iLep;
@@ -618,10 +639,10 @@ int DrellYanAnalyzer::GetRecoElectrons(int &leadEle,int &subEle)
 					subEle = jEle;
 				}
 				else {
-					leadEle= jEle;
+					leadEle = jEle;
 					subEle = iEle;
 				}
-			}
+			}//end if pass acceptance
 		}//end jEle loop
 	}//end iEle loop
 
@@ -670,7 +691,7 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 					subMu = jMu;
 				}
 				else {
-					leadMu= jMu;
+					leadMu = jMu;
 					subMu = iMu;
 				}
 			}
@@ -898,6 +919,7 @@ TString DrellYanAnalyzer::GetSampleName()
 	using namespace DrellYanVariables;
 
 	TString sampleName;
+	//electrons
 	if(_fileName==DYLL_M10to50_EE) 	        sampleName += "DYLL_M10to50_EE";
 	else if(_fileName==DYLL_M50to100_EE)    sampleName += "DYLL_M50to100_EE";
         else if(_fileName==DYLL_M100to200_EE)   sampleName += "DYLL_M100to200_EE";
@@ -909,6 +931,19 @@ TString DrellYanAnalyzer::GetSampleName()
         else if(_fileName==DYLL_M1000to1500_EE) sampleName += "DYLL_M1000to1500_EE";
         else if(_fileName==DYLL_M1500to2000_EE) sampleName += "DYLL_M1500to2000_EE";
         else if(_fileName==DYLL_M2000to3000_EE) sampleName += "DYLL_M2000to3000_EE";
+
+	//muons
+	else if(_fileName==DYLL_M10to50_MuMu)	  sampleName += "DYLL_M10to50_MuMu";
+	else if(_fileName==DYLL_M50to100_MuMu)    sampleName += "DYLL_M50to100_MuMu";
+        else if(_fileName==DYLL_M100to200_MuMu)   sampleName += "DYLL_M100to200_MuMu";
+        else if(_fileName==DYLL_M200to400_MuMu)   sampleName += "DYLL_M200to400_MuMu";
+        else if(_fileName==DYLL_M400to500_MuMu)   sampleName += "DYLL_M400to500_MuMu";
+        else if(_fileName==DYLL_M500to700_MuMu)   sampleName += "DYLL_M500to700_MuMu";
+        else if(_fileName==DYLL_M700to800_MuMu)   sampleName += "DYLL_M700to800_MuMu";
+        else if(_fileName==DYLL_M800to1000_MuMu)  sampleName += "DYLL_M800to1000_MuMu";
+        else if(_fileName==DYLL_M1000to1500_MuMu) sampleName += "DYLL_M1000to1500_MuMu";
+        else if(_fileName==DYLL_M1500to2000_MuMu) sampleName += "DYLL_M1500to2000_MuMu";
+        else if(_fileName==DYLL_M2000to3000_MuMu) sampleName += "DYLL_M2000to3000_MuMu";
 	else{
 		cout << "FileName not properly chosen" << endl;
 	}
