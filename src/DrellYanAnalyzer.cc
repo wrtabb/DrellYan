@@ -894,14 +894,14 @@ void DrellYanAnalyzer::SaveResults()
         else if(_fileName==DYLL_M2000to3000_EE) filesave += "_DYLL_M2000to3000";
 
 	//Data
-	if(_fileName==DoubleEG_RunB)      filesave += "_DoubleEG_RunB";
-	else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunC";
-        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunD";
-        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunE";
-        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunF";
-        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunG";
-        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunHver2";
-        else if(_fileName==DoubleEG_RunC) filesave += "_DoubleEG_RunHver3";
+	if(_fileName==DoubleEG_RunB)          filesave += "_DoubleEG_RunB";
+	else if(_fileName==DoubleEG_RunC)     filesave += "_DoubleEG_RunC";
+        else if(_fileName==DoubleEG_RunD)     filesave += "_DoubleEG_RunD";
+        else if(_fileName==DoubleEG_RunE)     filesave += "_DoubleEG_RunE";
+        else if(_fileName==DoubleEG_RunF)     filesave += "_DoubleEG_RunF";
+        else if(_fileName==DoubleEG_RunG)     filesave += "_DoubleEG_RunG";
+        else if(_fileName==DoubleEG_RunHver2) filesave += "_DoubleEG_RunHver2";
+        else if(_fileName==DoubleEG_RunHver3) filesave += "_DoubleEG_RunHver3";
 
 	else{
 		cout << "_FileToLoad not properly defined" << endl;

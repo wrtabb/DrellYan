@@ -15,8 +15,8 @@ root_file=(
 #	DYLL_M1000to1500_EE
 #	DYLL_M1500to2000_EE
 #	DYLL_M2000to3000_EE
-	DoubleEG_RunB
-	DoubleEG_RunC
+#	DoubleEG_RunB
+#	DoubleEG_RunC
 	DoubleEG_RunD
 	DoubleEG_RunE
 	DoubleEG_RunF
