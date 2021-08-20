@@ -237,50 +237,34 @@ double DrellYanAnalyzer::GetSampleWeights()
 	//-----Cross section-----//
 	double xSecWeight = 1.0;
 	double xSec = 1.0;
-	if(_fileName==DYLL_M10to50_EE ||
-	   _fileName==DYLL_M10to50_MuMu ||
+	if(_fileName==DYLL_M10to50 ||
 	   _fileName==DYLL_M10to50_TauTau) xSec = xSec_LL.at(0);
-	else if(_fileName==DYLL_M50to100_EE ||
-		_fileName==DYLL_M50to100_MuMu ||
+	else if(_fileName==DYLL_M50to100 ||
 		_fileName==DYLL_M50to100_TauTau) xSec = xSec_LL.at(1);
-	else if(_fileName==DYLL_M100to200_EE ||
-		_fileName==DYLL_M100to200_MuMu ||
+	else if(_fileName==DYLL_M100to200 ||
 		_fileName==DYLL_M100to200_TauTau) xSec = xSec_LL.at(2);
-	else if(_fileName==DYLL_M200to400_EE ||
-		_fileName==DYLL_M200to400_MuMu ||
+	else if(_fileName==DYLL_M200to400 ||
 		_fileName==DYLL_M200to400_TauTau) xSec = xSec_LL.at(3);
-	else if(_fileName==DYLL_M400to500_EE ||
-		_fileName==DYLL_M400to500_MuMu ||
+	else if(_fileName==DYLL_M400to500 ||
 		_fileName==DYLL_M400to500_TauTau) xSec = xSec_LL.at(4);
-	else if(_fileName==DYLL_M500to700_EE ||
-		_fileName==DYLL_M500to700_MuMu ||
+	else if(_fileName==DYLL_M500to700 ||
 		_fileName==DYLL_M500to700_TauTau) xSec = xSec_LL.at(5);
-	else if(_fileName==DYLL_M700to800_EE ||
-		_fileName==DYLL_M700to800_MuMu ||
+	else if(_fileName==DYLL_M700to800 ||
 		_fileName==DYLL_M700to800_TauTau) xSec = xSec_LL.at(6);
-	else if(_fileName==DYLL_M800to1000_EE ||
-		_fileName==DYLL_M800to1000_MuMu ||
+	else if(_fileName==DYLL_M800to1000 ||
 		_fileName==DYLL_M800to1000_TauTau) xSec = xSec_LL.at(7);
-	else if(_fileName==DYLL_M1000to1500_EE ||
-		_fileName==DYLL_M1000to1500_MuMu ||
+	else if(_fileName==DYLL_M1000to1500 ||
 		_fileName==DYLL_M1000to1500_TauTau) xSec = xSec_LL.at(8);
-	else if(_fileName==DYLL_M1500to2000_EE ||
-		_fileName==DYLL_M1500to2000_MuMu ||
+	else if(_fileName==DYLL_M1500to2000 ||
 		_fileName==DYLL_M1500to2000_TauTau) xSec = xSec_LL.at(9);
-	else if(_fileName==DYLL_M2000to3000_EE ||
-		_fileName==DYLL_M2000to3000_MuMu ||
+	else if(_fileName==DYLL_M2000to3000 ||
 		_fileName==DYLL_M2000to3000_TauTau) xSec = xSec_LL.at(10);
 	
 	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec;
 	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec/_nEvents;
 
-	//-----Gen Weights-----//
-	double sumGenWeight = GetGenWeightSum();
-	double genWeight = 1.0;
-	if(_ntupType==V2P6) genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;  
-
 	//-----Total Weight-----//
-	double weight = xSecWeight*genWeight;
+	double weight = xSecWeight;
 	return weight;
 }//end GetSampleWeights()
 
@@ -361,10 +345,12 @@ int DrellYanAnalyzer::EventLoop()
 		 return 0;
 	}
 
-	//Initialize sample weight, which is the weight for the whole sample
-	//These include cross section weights and gen weights 
-	double sampleWeight = 1.0;
-	if(_isMC) sampleWeight = GetSampleWeights();
+	double xSecWeight = 1.0;
+	double sumGenWeight = 1.0;
+	if(_isMC){
+		xSecWeight = GetSampleWeights();
+		sumGenWeight = GetGenWeightSum();
+	}
 
 	//Loop over all events in the loaded tree
 	TTimeStamp ts_start;
@@ -436,10 +422,13 @@ int DrellYanAnalyzer::EventLoop()
 		//Get event from tree
 		_tree->GetEntry(iEntry);
 
-		//Calculate event weights
-		//These include pileup weights and efficiency scale factors
+		//Calculate genweight for MC samples
+		double genWeight = 1.0;
 		double eventWeight = 1.0;
-		if(_isMC) eventWeight = GetEventWeights();
+		if(_isMC){
+			genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;
+			eventWeight = GetEventWeights();
+		}
 
 		//Get gen level leptons
 		int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
@@ -533,7 +522,7 @@ int DrellYanAnalyzer::EventLoop()
 					 	     prunedEta2,prunedPhi2);
 		}//end if nDileptons>0
 	
-		double weights = sampleWeight*eventWeight;
+		double weights = xSecWeight*eventWeight*genWeight;
 		//Fill all histograms
 		_hMassHardProcess->Fill(invMassHard,weights);
 		_hRapidityHardProcess->Fill(rapidityHard,weights);
@@ -665,7 +654,7 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 
 	for(int iMu=0;iMu<nMuon;iMu++){
 		if(!Muon_passTightID[iMu]) continue;
-		if(!PassMuonIsolation(iMu)) continue;
+		//if(!PassMuonIsolation(iMu)) continue;
 		for(int jMu=iMu+1;jMu<nMuon;jMu++){
 			pt1 = Muon_pT[iMu];
 			pt2 = Muon_pT[jMu];
@@ -677,7 +666,7 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 			charge2 = Muon_charge[jMu];
 
 			if(!Muon_passTightID[jMu]) continue;
-			if(!PassMuonIsolation(jMu)) continue;
+			//if(!PassMuonIsolation(jMu)) continue;
 			if(!PassMuonAngle(pt1,eta1,phi1,muMass,pt2,eta2,phi2,muMass)) 
 				continue;
 			if(charge1*charge2>0) continue;
@@ -833,7 +822,6 @@ bool DrellYanAnalyzer::PassMuonAngle(double pt1,double eta1,double phi1,double m
 bool DrellYanAnalyzer::PassMuonIsolation(int index)
 {
 	using namespace DrellYanVariables;
-	double pfIso_dBeta;
 	double chargedIso = Muon_PfChargedHadronIsoR04[index];
 	double neutralIso = Muon_PfNeutralHadronIsoR04[index];
 	double gammaIso	  = Muon_PfGammaIsoR04[index];
@@ -881,20 +869,20 @@ void DrellYanAnalyzer::SaveResults()
 	}
 
 	//MC Electrons
-	if(_fileName==DYLL_M10to50_EE)          filesave += "_DYLL_M10to50";
-	else if(_fileName==DYLL_M50to100_EE)	filesave += "_DYLL_M50to100";
-        else if(_fileName==DYLL_M100to200_EE)   filesave += "_DYLL_M100to200";
-        else if(_fileName==DYLL_M200to400_EE)   filesave += "_DYLL_M200to400";
-        else if(_fileName==DYLL_M400to500_EE)   filesave += "_DYLL_M400to500";
-        else if(_fileName==DYLL_M500to700_EE)   filesave += "_DYLL_M500to700";
-        else if(_fileName==DYLL_M700to800_EE)   filesave += "_DYLL_M700to800";
-        else if(_fileName==DYLL_M800to1000_EE)  filesave += "_DYLL_M800to1000";
-        else if(_fileName==DYLL_M1000to1500_EE) filesave += "_DYLL_M1000to1500";
-        else if(_fileName==DYLL_M1500to2000_EE) filesave += "_DYLL_M1500to2000";
-        else if(_fileName==DYLL_M2000to3000_EE) filesave += "_DYLL_M2000to3000";
+	if(_fileName==DYLL_M10to50)          filesave += "_DYLL_M10to50";
+	else if(_fileName==DYLL_M50to100)    filesave += "_DYLL_M50to100";
+	else if(_fileName==DYLL_M100to200)   filesave += "_DYLL_M100to200";
+	else if(_fileName==DYLL_M200to400)   filesave += "_DYLL_M200to400";
+	else if(_fileName==DYLL_M400to500)   filesave += "_DYLL_M400to500";
+	else if(_fileName==DYLL_M500to700)   filesave += "_DYLL_M500to700";
+	else if(_fileName==DYLL_M700to800)   filesave += "_DYLL_M700to800";
+	else if(_fileName==DYLL_M800to1000)  filesave += "_DYLL_M800to1000";
+	else if(_fileName==DYLL_M1000to1500) filesave += "_DYLL_M1000to1500";
+	else if(_fileName==DYLL_M1500to2000) filesave += "_DYLL_M1500to2000";
+	else if(_fileName==DYLL_M2000to3000) filesave += "_DYLL_M2000to3000";
 
 	//Data
-	if(_fileName==DoubleEG_RunB)          filesave += "_DoubleEG_RunB";
+	else if(_fileName==DoubleEG_RunB)     filesave += "_DoubleEG_RunB";
 	else if(_fileName==DoubleEG_RunC)     filesave += "_DoubleEG_RunC";
         else if(_fileName==DoubleEG_RunD)     filesave += "_DoubleEG_RunD";
         else if(_fileName==DoubleEG_RunE)     filesave += "_DoubleEG_RunE";
@@ -932,34 +920,35 @@ TString DrellYanAnalyzer::GetSampleName()
 	using namespace DrellYanVariables;
 
 	TString sampleName;
-	//electrons
-	if(_fileName==DYLL_M10to50_EE) 	        sampleName += "DYLL_M10to50_EE";
-	else if(_fileName==DYLL_M50to100_EE)    sampleName += "DYLL_M50to100_EE";
-        else if(_fileName==DYLL_M100to200_EE)   sampleName += "DYLL_M100to200_EE";
-        else if(_fileName==DYLL_M200to400_EE)   sampleName += "DYLL_M200to400_EE";
-        else if(_fileName==DYLL_M400to500_EE)   sampleName += "DYLL_M400to500_EE";
-        else if(_fileName==DYLL_M500to700_EE)   sampleName += "DYLL_M500to700_EE";
-        else if(_fileName==DYLL_M700to800_EE)   sampleName += "DYLL_M700to800_EE";
-        else if(_fileName==DYLL_M800to1000_EE)  sampleName += "DYLL_M800to1000_EE";
-        else if(_fileName==DYLL_M1000to1500_EE) sampleName += "DYLL_M1000to1500_EE";
-        else if(_fileName==DYLL_M1500to2000_EE) sampleName += "DYLL_M1500to2000_EE";
-        else if(_fileName==DYLL_M2000to3000_EE) sampleName += "DYLL_M2000to3000_EE";
-
-	//muons
-	else if(_fileName==DYLL_M10to50_MuMu)	  sampleName += "DYLL_M10to50_MuMu";
-	else if(_fileName==DYLL_M50to100_MuMu)    sampleName += "DYLL_M50to100_MuMu";
-        else if(_fileName==DYLL_M100to200_MuMu)   sampleName += "DYLL_M100to200_MuMu";
-        else if(_fileName==DYLL_M200to400_MuMu)   sampleName += "DYLL_M200to400_MuMu";
-        else if(_fileName==DYLL_M400to500_MuMu)   sampleName += "DYLL_M400to500_MuMu";
-        else if(_fileName==DYLL_M500to700_MuMu)   sampleName += "DYLL_M500to700_MuMu";
-        else if(_fileName==DYLL_M700to800_MuMu)   sampleName += "DYLL_M700to800_MuMu";
-        else if(_fileName==DYLL_M800to1000_MuMu)  sampleName += "DYLL_M800to1000_MuMu";
-        else if(_fileName==DYLL_M1000to1500_MuMu) sampleName += "DYLL_M1000to1500_MuMu";
-        else if(_fileName==DYLL_M1500to2000_MuMu) sampleName += "DYLL_M1500to2000_MuMu";
-        else if(_fileName==DYLL_M2000to3000_MuMu) sampleName += "DYLL_M2000to3000_MuMu";
+	if(_lepType==ELE){
+		if(_fileName==DYLL_M10to50) 	     sampleName += "DYLL_M10to50_EE";
+		else if(_fileName==DYLL_M50to100)    sampleName += "DYLL_M50to100_EE";
+		else if(_fileName==DYLL_M100to200)   sampleName += "DYLL_M100to200_EE";
+		else if(_fileName==DYLL_M200to400)   sampleName += "DYLL_M200to400_EE";
+		else if(_fileName==DYLL_M400to500)   sampleName += "DYLL_M400to500_EE";
+		else if(_fileName==DYLL_M500to700)   sampleName += "DYLL_M500to700_EE";
+		else if(_fileName==DYLL_M700to800)   sampleName += "DYLL_M700to800_EE";
+		else if(_fileName==DYLL_M800to1000)  sampleName += "DYLL_M800to1000_EE";
+		else if(_fileName==DYLL_M1000to1500) sampleName += "DYLL_M1000to1500_EE";
+		else if(_fileName==DYLL_M1500to2000) sampleName += "DYLL_M1500to2000_EE";
+		else if(_fileName==DYLL_M2000to3000) sampleName += "DYLL_M2000to3000_EE";
+	}//end if leptype = ELE
+	else if(_lepType==MUON){
+		if(_fileName==DYLL_M10to50)     sampleName += "DYLL_M10to50_MuMu";
+		else if(_fileName==DYLL_M50to100)    sampleName += "DYLL_M50to100_MuMu";
+		else if(_fileName==DYLL_M100to200)   sampleName += "DYLL_M100to200_MuMu";
+		else if(_fileName==DYLL_M200to400)   sampleName += "DYLL_M200to400_MuMu";
+		else if(_fileName==DYLL_M400to500)   sampleName += "DYLL_M400to500_MuMu";
+		else if(_fileName==DYLL_M500to700)   sampleName += "DYLL_M500to700_MuMu";
+		else if(_fileName==DYLL_M700to800)   sampleName += "DYLL_M700to800_MuMu";
+		else if(_fileName==DYLL_M800to1000)  sampleName += "DYLL_M800to1000_MuMu";
+		else if(_fileName==DYLL_M1000to1500) sampleName += "DYLL_M1000to1500_MuMu";
+		else if(_fileName==DYLL_M1500to2000) sampleName += "DYLL_M1500to2000_MuMu";
+		else if(_fileName==DYLL_M2000to3000) sampleName += "DYLL_M2000to3000_MuMu";
+	}//end if leptype = MUON
 
 	//Data
-	else if(_fileName==DoubleEG_RunB) sampleName += "crab_DoubleEG_RunB";
+	if(_fileName==DoubleEG_RunB) sampleName += "crab_DoubleEG_RunB";
 	else if(_fileName==DoubleEG_RunC) sampleName += "crab_DoubleEG_RunC";
 	else if(_fileName==DoubleEG_RunD) sampleName += "crab_DoubleEG_RunD";
 	else if(_fileName==DoubleEG_RunE) sampleName += "crab_DoubleEG_RunE";

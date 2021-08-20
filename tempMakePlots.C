@@ -2,14 +2,25 @@
 void tempMakePlots()
 {
 	vector<TString> file_list = {
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunB_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunC_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunD_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunE_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunF_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunG_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunHver2_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunHver3_EE.root"
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunB_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunC_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunD_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunE_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunF_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunG_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunHver2_MuMu.root",
+//		"output_data/DYHists_v2p6_DYtoLL_DoubleEG_RunHver3_MuMu.root"
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M10to50_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M50to100_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M100to200_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M200to400_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M400to500_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M500to700_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M700to800_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M800to1000_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1000to1500_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1500to2000_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M2000to3000_EE.root"
 	};
 	
 	vector<TFile*> files;
@@ -18,6 +29,7 @@ void tempMakePlots()
 	vector<TH1D*> histPt;
 	int nFiles = file_list.size();
 	for(int i=0;i<nFiles;i++){
+		cout << "Adding hist from: " << file_list.at(i) << endl;
 		files.push_back(new TFile(file_list.at(i)));
 		histInvMass.push_back((TH1D*)files.at(i)->Get("hMassReco"));
 		histRapidity.push_back((TH1D*)files.at(i)->Get("hRapidityReco"));
@@ -25,7 +37,6 @@ void tempMakePlots()
 	}
 	
 	for(int i=1;i<nFiles;i++){
-		cout << "Adding hist from: " << file_list.at(i) << endl;
 		histInvMass.at(0)->Add(histInvMass.at(i));
 		histRapidity.at(0)->Add(histRapidity.at(i));
 		histPt.at(0)->Add(histPt.at(i));
@@ -41,18 +52,18 @@ void tempMakePlots()
 	c1->SetGrid();
 	c1->SetLogx();
 	c1->SetLogy();
-	histInvMass.at(0)->Draw("pe");
-	c1->SaveAs("plots/DYtoEE_InvMassData.png");
+	histInvMass.at(0)->Draw("hist");
+	c1->SaveAs("plots/DYtoEE_InvMassMC.png");
 
 	TCanvas*c2 = new TCanvas("c2","",0,0,1000,1000);
 	c2->SetGrid();
 	c2->SetLogy();
-	histRapidity.at(0)->Draw("pe");
-	c2->SaveAs("plots/DYtoEE_RapidityData.png");
+	histRapidity.at(0)->Draw("hist");
+	c2->SaveAs("plots/DYtoEE_RapidityMC.png");
 
 	TCanvas*c3 = new TCanvas("c3","",0,0,1000,1000);
 	c3->SetGrid();
 	c3->SetLogy();
-	histPt.at(0)->Draw("pe");
-	c3->SaveAs("plots/DYtoEE_PtData.png");
+	histPt.at(0)->Draw("hist");
+	c3->SaveAs("plots/DYtoEE_PtMC.png");
 }

@@ -1,3 +1,5 @@
+#ifndef DrellYanVariables_H
+#define DrellYanVariables_H
 
 namespace DrellYanVariables
 {
@@ -48,28 +50,17 @@ namespace DrellYanVariables
 
 	//File types
 	enum FileName{
-		DYLL_M10to50_EE,				
-		DYLL_M50to100_EE,	
-		DYLL_M100to200_EE,				
-		DYLL_M200to400_EE,				
-		DYLL_M400to500_EE,				
-		DYLL_M500to700_EE,				
-		DYLL_M700to800_EE,				
-		DYLL_M800to1000_EE,				
-		DYLL_M1000to1500_EE,				
-		DYLL_M1500to2000_EE,				
-		DYLL_M2000to3000_EE,				
-		DYLL_M10to50_MuMu,			
-		DYLL_M50to100_MuMu,	
-		DYLL_M100to200_MuMu,				
-		DYLL_M200to400_MuMu,				
-		DYLL_M400to500_MuMu,				
-		DYLL_M500to700_MuMu,				
-		DYLL_M700to800_MuMu,				
-		DYLL_M800to1000_MuMu,				
-		DYLL_M1000to1500_MuMu,				
-		DYLL_M1500to2000_MuMu,				
-		DYLL_M2000to3000_MuMu,				
+		DYLL_M10to50,				
+		DYLL_M50to100,	
+		DYLL_M100to200,				
+		DYLL_M200to400,				
+		DYLL_M400to500,				
+		DYLL_M500to700,				
+		DYLL_M700to800,				
+		DYLL_M800to1000,				
+		DYLL_M1000to1500,				
+		DYLL_M1500to2000,				
+		DYLL_M2000to3000,				
 		ST_tbarW,					
 		ST_tW,						
 		ttbar_M0To700,			   
@@ -763,3 +754,5 @@ namespace DrellYanVariables
         };
         int _nHistTypes = 4*_histTypes.size();
 }
+
+#endif
