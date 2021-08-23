@@ -94,7 +94,7 @@ namespace DrellYanVariables
 	};
 
 	//-----V2.6-----//	
-	TString base_directory_v2p6 = "root://xrootd-local.unl.edu///store/user/wtabb/DrellYan_13TeV_2016/v2p6/skims/";
+	TString base_directory_v2p6 = "/mnt/hadoop/user/uscms01/pnfs/unl.edu/data4/cms/store/user/wtabb/DrellYan_13TeV_2016/v2p6/skims/";
 
 	vector<TString> dy_EE_v2p6 = {
 		//Drell-Yan MC signal

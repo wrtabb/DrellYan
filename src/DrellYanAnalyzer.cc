@@ -199,6 +199,8 @@ void DrellYanAnalyzer::DefineHistogramProperties(TH1*hist)
 	if(!_isMC){
 		hist->SetMarkerStyle(20);
 		hist->SetMarkerColor(kBlack);
+		hist->SetLineColor(kBlack);
+		hist->SetFillColor(kWhite);
 	}//end !isMC
 	else{
 		if(_sampleType==SAMPLE_LL){
@@ -260,6 +262,10 @@ double DrellYanAnalyzer::GetSampleWeights()
 	else if(_fileName==DYLL_M2000to3000 ||
 		_fileName==DYLL_M2000to3000_TauTau) xSec = xSec_LL.at(10);
 	
+	//When cross section weights are applied with gen weights,
+	//You don't divide by the number of events
+	//For the TEST cases, I don't use gen weights because
+	//Gen weights are only applied on the full sample
 	if(_ntupType==V2P6) xSecWeight = dataLuminosity*xSec;
 	else if(_ntupType==TEST) xSecWeight = dataLuminosity*xSec/_nEvents;
 
@@ -280,7 +286,6 @@ double DrellYanAnalyzer::GetEventWeights()
 double DrellYanAnalyzer::GetGenWeightSum()
 {
 	using namespace DrellYanVariables;
-
 
 	TTimeStamp ts_start;
 	cout << endl;
@@ -652,6 +657,12 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 	double charge1;
 	double charge2;
 
+	//For muons we want exactly two passing all selection criteria
+	//The two must be chosen by which has the smallest vertex chi2
+	//This is not yet implemented
+	//I'm thinking that first do all cuts, then of the remaining muons,
+	//if there are more than two, check which pair has the smallest chi2
+	
 	for(int iMu=0;iMu<nMuon;iMu++){
 		if(!Muon_passTightID[iMu]) continue;
 		//if(!PassMuonIsolation(iMu)) continue;
@@ -667,9 +678,9 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 
 			if(!Muon_passTightID[jMu]) continue;
 			//if(!PassMuonIsolation(jMu)) continue;
-			if(!PassMuonAngle(pt1,eta1,phi1,muMass,pt2,eta2,phi2,muMass)) 
-				continue;
-			if(charge1*charge2>0) continue;
+			//if(!PassMuonAngle(pt1,eta1,phi1,muMass,pt2,eta2,phi2,muMass)) 
+			//	continue;
+			//if(charge1*charge2>0) continue;
 
 			//Other cuts not yet applied:
 			//smallest dimuon vertex chi2
@@ -684,7 +695,7 @@ int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
 					leadMu = jMu;
 					subMu = iMu;
 				}
-			}
+			}//end pass acceptance
 		}//end jMu loop
 	}//end iMu loop
 
@@ -868,7 +879,7 @@ void DrellYanAnalyzer::SaveResults()
 		cout << "*****************************************************" << endl;
 	}
 
-	//MC Electrons
+	//MC
 	if(_fileName==DYLL_M10to50)          filesave += "_DYLL_M10to50";
 	else if(_fileName==DYLL_M50to100)    filesave += "_DYLL_M50to100";
 	else if(_fileName==DYLL_M100to200)   filesave += "_DYLL_M100to200";
@@ -932,9 +943,17 @@ TString DrellYanAnalyzer::GetSampleName()
 		else if(_fileName==DYLL_M1000to1500) sampleName += "DYLL_M1000to1500_EE";
 		else if(_fileName==DYLL_M1500to2000) sampleName += "DYLL_M1500to2000_EE";
 		else if(_fileName==DYLL_M2000to3000) sampleName += "DYLL_M2000to3000_EE";
+		else if(_fileName==DoubleEG_RunB)    sampleName += "SingleMuon_RunB";
+		else if(_fileName==DoubleEG_RunC)    sampleName += "SingleMuon_RunC";
+		else if(_fileName==DoubleEG_RunD)    sampleName += "SingleMuon_RunD";
+		else if(_fileName==DoubleEG_RunE)    sampleName += "SingleMuon_RunE";
+		else if(_fileName==DoubleEG_RunF)    sampleName += "SingleMuon_RunF";
+		else if(_fileName==DoubleEG_RunG)    sampleName += "SingleMuon_RunG";
+		else if(_fileName==DoubleEG_RunHver2)sampleName += "SingleMuon_RunHver2";
+		else if(_fileName==DoubleEG_RunHver3)sampleName += "SingleMuon_RunHver3";
 	}//end if leptype = ELE
 	else if(_lepType==MUON){
-		if(_fileName==DYLL_M10to50)     sampleName += "DYLL_M10to50_MuMu";
+		if(_fileName==DYLL_M10to50)          sampleName += "DYLL_M10to50_MuMu";
 		else if(_fileName==DYLL_M50to100)    sampleName += "DYLL_M50to100_MuMu";
 		else if(_fileName==DYLL_M100to200)   sampleName += "DYLL_M100to200_MuMu";
 		else if(_fileName==DYLL_M200to400)   sampleName += "DYLL_M200to400_MuMu";
@@ -945,19 +964,21 @@ TString DrellYanAnalyzer::GetSampleName()
 		else if(_fileName==DYLL_M1000to1500) sampleName += "DYLL_M1000to1500_MuMu";
 		else if(_fileName==DYLL_M1500to2000) sampleName += "DYLL_M1500to2000_MuMu";
 		else if(_fileName==DYLL_M2000to3000) sampleName += "DYLL_M2000to3000_MuMu";
+		else if(_fileName==DoubleEG_RunB)    sampleName += "crab_DoubleEG_RunB";
+		else if(_fileName==DoubleEG_RunC)    sampleName += "crab_DoubleEG_RunC";
+		else if(_fileName==DoubleEG_RunD)    sampleName += "crab_DoubleEG_RunD";
+		else if(_fileName==DoubleEG_RunE)    sampleName += "crab_DoubleEG_RunE";
+		else if(_fileName==DoubleEG_RunF)    sampleName += "crab_DoubleEG_RunF";
+		else if(_fileName==DoubleEG_RunG)    sampleName += "crab_DoubleEG_RunG";
+		else if(_fileName==DoubleEG_RunHver2)sampleName += "crab_DoubleEG_RunHver2";
+		else if(_fileName==DoubleEG_RunHver3)sampleName += "crab_DoubleEG_RunHver3";
 	}//end if leptype = MUON
 
 	//Data
-	if(_fileName==DoubleEG_RunB) sampleName += "crab_DoubleEG_RunB";
-	else if(_fileName==DoubleEG_RunC) sampleName += "crab_DoubleEG_RunC";
-	else if(_fileName==DoubleEG_RunD) sampleName += "crab_DoubleEG_RunD";
-	else if(_fileName==DoubleEG_RunE) sampleName += "crab_DoubleEG_RunE";
-	else if(_fileName==DoubleEG_RunF) sampleName += "crab_DoubleEG_RunF";
-	else if(_fileName==DoubleEG_RunG) sampleName += "crab_DoubleEG_RunG";
-	else if(_fileName==DoubleEG_RunHver2) sampleName += "crab_DoubleEG_RunHver2";
-	else if(_fileName==DoubleEG_RunHver3) sampleName += "crab_DoubleEG_RunHver3";
 	else{
 		cout << "FileName not properly chosen" << endl;
+		cout << "See include/DrellYanVariables.h to see possible FileNames" << endl;
+		return "ERROR";
 	}
 
 	return sampleName;
