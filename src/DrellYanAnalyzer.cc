@@ -740,7 +740,7 @@ bool DrellYanAnalyzer::PassHLT()
 			}//end if trigName...
 		}//end if lepType
 		else if(_lepType==MUON){
-			if((trigName.CompareTo(muonTrigger1)==0 || 
+			if((//trigName.CompareTo(muonTrigger1)==0 || 
 			    trigName.CompareTo(muonTrigger2)==0 ) && 
 			    HLT_trigFired[iHLT]==1){
 				passHLT = true;
@@ -893,14 +893,14 @@ void DrellYanAnalyzer::SaveResults()
 	else if(_fileName==DYLL_M2000to3000) filesave += "_DYLL_M2000to3000";
 
 	//Data
-	else if(_fileName==DoubleEG_RunB)     filesave += "_DoubleEG_RunB";
-	else if(_fileName==DoubleEG_RunC)     filesave += "_DoubleEG_RunC";
-        else if(_fileName==DoubleEG_RunD)     filesave += "_DoubleEG_RunD";
-        else if(_fileName==DoubleEG_RunE)     filesave += "_DoubleEG_RunE";
-        else if(_fileName==DoubleEG_RunF)     filesave += "_DoubleEG_RunF";
-        else if(_fileName==DoubleEG_RunG)     filesave += "_DoubleEG_RunG";
-        else if(_fileName==DoubleEG_RunHver2) filesave += "_DoubleEG_RunHver2";
-        else if(_fileName==DoubleEG_RunHver3) filesave += "_DoubleEG_RunHver3";
+	else if(_fileName==DATA_RunB)     filesave += "_DATA_RunB";
+	else if(_fileName==DATA_RunC)     filesave += "_DATA_RunC";
+        else if(_fileName==DATA_RunD)     filesave += "_DATA_RunD";
+        else if(_fileName==DATA_RunE)     filesave += "_DATA_RunE";
+        else if(_fileName==DATA_RunF)     filesave += "_DATA_RunF";
+        else if(_fileName==DATA_RunG)     filesave += "_DATA_RunG";
+        else if(_fileName==DATA_RunHver2) filesave += "_DATA_RunHver2";
+        else if(_fileName==DATA_RunHver3) filesave += "_DATA_RunHver3";
 
 	else{
 		cout << "_FileToLoad not properly defined" << endl;
@@ -943,14 +943,14 @@ TString DrellYanAnalyzer::GetSampleName()
 		else if(_fileName==DYLL_M1000to1500) sampleName += "DYLL_M1000to1500_EE";
 		else if(_fileName==DYLL_M1500to2000) sampleName += "DYLL_M1500to2000_EE";
 		else if(_fileName==DYLL_M2000to3000) sampleName += "DYLL_M2000to3000_EE";
-		else if(_fileName==DoubleEG_RunB)    sampleName += "SingleMuon_RunB";
-		else if(_fileName==DoubleEG_RunC)    sampleName += "SingleMuon_RunC";
-		else if(_fileName==DoubleEG_RunD)    sampleName += "SingleMuon_RunD";
-		else if(_fileName==DoubleEG_RunE)    sampleName += "SingleMuon_RunE";
-		else if(_fileName==DoubleEG_RunF)    sampleName += "SingleMuon_RunF";
-		else if(_fileName==DoubleEG_RunG)    sampleName += "SingleMuon_RunG";
-		else if(_fileName==DoubleEG_RunHver2)sampleName += "SingleMuon_RunHver2";
-		else if(_fileName==DoubleEG_RunHver3)sampleName += "SingleMuon_RunHver3";
+		else if(_fileName==DATA_RunB)    sampleName += "crab_DoubleEG_RunB";
+		else if(_fileName==DATA_RunC)    sampleName += "crab_DoubleEG_RunC";
+		else if(_fileName==DATA_RunD)    sampleName += "crab_DoubleEG_RunD";
+		else if(_fileName==DATA_RunE)    sampleName += "crab_DoubleEG_RunE";
+		else if(_fileName==DATA_RunF)    sampleName += "crab_DoubleEG_RunF";
+		else if(_fileName==DATA_RunG)    sampleName += "crab_DoubleEG_RunG";
+		else if(_fileName==DATA_RunHver2)sampleName += "crab_DoubleEG_RunHver2";
+		else if(_fileName==DATA_RunHver3)sampleName += "crab_DoubleEG_RunHver3";
 	}//end if leptype = ELE
 	else if(_lepType==MUON){
 		if(_fileName==DYLL_M10to50)          sampleName += "DYLL_M10to50_MuMu";
@@ -964,14 +964,14 @@ TString DrellYanAnalyzer::GetSampleName()
 		else if(_fileName==DYLL_M1000to1500) sampleName += "DYLL_M1000to1500_MuMu";
 		else if(_fileName==DYLL_M1500to2000) sampleName += "DYLL_M1500to2000_MuMu";
 		else if(_fileName==DYLL_M2000to3000) sampleName += "DYLL_M2000to3000_MuMu";
-		else if(_fileName==DoubleEG_RunB)    sampleName += "crab_DoubleEG_RunB";
-		else if(_fileName==DoubleEG_RunC)    sampleName += "crab_DoubleEG_RunC";
-		else if(_fileName==DoubleEG_RunD)    sampleName += "crab_DoubleEG_RunD";
-		else if(_fileName==DoubleEG_RunE)    sampleName += "crab_DoubleEG_RunE";
-		else if(_fileName==DoubleEG_RunF)    sampleName += "crab_DoubleEG_RunF";
-		else if(_fileName==DoubleEG_RunG)    sampleName += "crab_DoubleEG_RunG";
-		else if(_fileName==DoubleEG_RunHver2)sampleName += "crab_DoubleEG_RunHver2";
-		else if(_fileName==DoubleEG_RunHver3)sampleName += "crab_DoubleEG_RunHver3";
+		else if(_fileName==DATA_RunB)    sampleName += "SingleMuon_Run2016B";
+		else if(_fileName==DATA_RunC)    sampleName += "SingleMuon_Run2016C";
+		else if(_fileName==DATA_RunD)    sampleName += "SingleMuon_Run2016D";
+		else if(_fileName==DATA_RunE)    sampleName += "SingleMuon_Run2016E";
+		else if(_fileName==DATA_RunF)    sampleName += "SingleMuon_Run2016F";
+		else if(_fileName==DATA_RunG)    sampleName += "SingleMuon_Run2016G";
+		else if(_fileName==DATA_RunHver2)sampleName += "SingleMuon_Run2016Hver2";
+		else if(_fileName==DATA_RunHver3)sampleName += "SingleMuon_Run2016Hver3";
 	}//end if leptype = MUON
 
 	//Data

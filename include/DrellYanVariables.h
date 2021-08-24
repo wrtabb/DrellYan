@@ -83,14 +83,14 @@ namespace DrellYanVariables
 		DYLL_M1000to1500_TauTau,			   
 		DYLL_M1500to2000_TauTau,			   
 		DYLL_M2000to3000_TauTau,			   
-		DoubleEG_RunB,					
-		DoubleEG_RunC,					
-		DoubleEG_RunD,					
-		DoubleEG_RunE,					
-		DoubleEG_RunF,					
-		DoubleEG_RunG,					
-		DoubleEG_RunHver2,				
-		DoubleEG_RunHver3				
+		DATA_RunB,					
+		DATA_RunC,					
+		DATA_RunD,					
+		DATA_RunE,					
+		DATA_RunF,					
+		DATA_RunG,					
+		DATA_RunHver2,				
+		DATA_RunHver3				
 	};
 
 	//-----V2.6-----//	
@@ -136,9 +136,8 @@ namespace DrellYanVariables
 	};
 	vector<TString> fakes_v2p6 = {
 		//W+Jets (Fakes)		
-		"WJetsToLNu_amcatnlo_ext2v5.root",			
-		"WJetsToLNu_amcatnlo_ext.root",				
-		"WJetsToLNu_amcatnlo.root"				
+		"WJetsToLNu_amcatnlo.root",
+		"WJetsToLNu_amcatnlo_ext.root"				
 	};
 	vector<TString> dibosons_v2p6 = {
 		//EW (bosons + DY->TauTau)
@@ -236,6 +235,8 @@ namespace DrellYanVariables
 	//	"DYLL_M2000to3000_MuMu.root"				
 	};
 
+	// Cross sections
+	
 	vector<double> xSec_LL = {
 		18610.0,	//DYLL_10to50 v1,v2,ext1v1 combined (NLO)
 		1923.26*3,	//DYLL_50to100(NNLO)
@@ -249,16 +250,21 @@ namespace DrellYanVariables
 		0.000730495*3,	//DYLL_1500to2000(NNLO)
 		0.00016844*3	//DYLL_2000to3000(NNLO)
 	};
-	vector<double> ntuple_xsec_tops = {
+	vector<double> xsec_tops = {
 		35.85,	//ST_tbarW(NNLO)
 		35.85,	//ST_tW(NNLO)
-		//Need to calculate cross section of M0to700 from full range
-		// xsec_ttbar = 831.76
-		// nEntriesTotal = 76949785
-		// nEntriesM0to700 = 
-		1.0,//ttbar_truncated_M0To700				
+		795.859,//ttbar_truncated_M0To700 (I calculated from NNLO xsec of full tbar sample)		
 		76.605,	//ttbar_M700to1000(NNLO)	
 		20.578	//ttbar_M1000toInf(NNLO)
+	};
+	vector<double> xsec_dibosons = {
+		118.7,  //WW (NNLO)
+		47.13,  //WZ (NLO)
+		16.523 //ZZ (NLO)
+	};
+	vector<TString> xsec_fakes = {
+		61526, //WJetsToLNu_amcatnlo			
+		61526 //WJetsToLNu_amcatnlo_ext",				
 	};
 
 	//Cut criteria

@@ -1,8 +1,8 @@
 #!/bin/bash
 
 lepType=(
-#	ELE
-	MUON
+	ELE
+#	MUON
 )
 sampleType=SAMPLE_LL
 runType=V2P6
@@ -18,19 +18,19 @@ root_file=(
 #	DYLL_M1000to1500
 #	DYLL_M1500to2000
 #	DYLL_M2000to3000
-	DoubleEG_RunB
-	DoubleEG_RunC
-	DoubleEG_RunD
-	DoubleEG_RunE
-	DoubleEG_RunF
-	DoubleEG_RunG
-	DoubleEG_RunHver2
-	DoubleEG_RunHver3
+	DATA_RunB
+	DATA_RunC
+	DATA_RunD
+	DATA_RunE
+	DATA_RunF
+	DATA_RunG
+	DATA_RunHver2
+	DATA_RunHver3
 )
 
 for index1 in ${!lepType[*]}; do
 	for index2 in ${!root_file[*]}; do
-		echo "Beginning to process ${root_file[$index2]}"
+		echo "Beginning to process ${root_file[$index2]} for ${lepType[$index1]}"
 		condor_submit \
 			arg1=${runType} \
 			arg2=${sampleType} \
