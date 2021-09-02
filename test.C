@@ -2,12 +2,10 @@
 
 using namespace DrellYanVariables;
 
-void test(NtupleType ntupType,SampleType sampleType,LepType lepType,FileName fileName)
+void test(NtupleType ntupType,LepType lepType,FileName fileName)
 {
-	DrellYanAnalyzer*dy = new DrellYanAnalyzer(ntupType,sampleType,lepType,fileName);
+	DrellYanAnalyzer*dy = new DrellYanAnalyzer(ntupType,lepType,fileName);
 	dy->LoadData();
-	Long64_t totalEntries = dy->GetNevents();
-	cout << "Total entries loaded: " << totalEntries << endl;
 	dy->EventLoop();
 
 	delete dy;

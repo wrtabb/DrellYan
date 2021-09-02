@@ -3,6 +3,7 @@ void tempMakePlots()
 {
 	//gROOT->SetBatch(true);
 	vector<TString> file_list = {
+/*
 		"output_data/DYHists_v2p6_DYtoLL_DATA_RunB_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DATA_RunC_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DATA_RunD_EE.root",
@@ -11,19 +12,18 @@ void tempMakePlots()
 		"output_data/DYHists_v2p6_DYtoLL_DATA_RunG_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DATA_RunHver2_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DATA_RunHver3_EE.root"
-/*
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M10to50_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M50to100_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M100to200_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M200to400_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M400to500_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M500to700_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M700to800_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M800to1000_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1000to1500_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1500to2000_MuMu.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M2000to3000_MuMu.root"
 */
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M10to50_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M50to100_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M100to200_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M200to400_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M400to500_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M500to700_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M700to800_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M800to1000_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1000to1500_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1500to2000_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_DYLL_M2000to3000_EE.root"
 	};
 	
 	vector<TFile*> files;

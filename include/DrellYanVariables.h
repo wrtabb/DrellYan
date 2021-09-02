@@ -23,13 +23,13 @@ namespace DrellYanVariables
 
 	//Sample Types
 	enum SampleType{
-		SAMPLE_LL,
-		SAMPLE_TOP,
-		SAMPLE_FAKE,
-		SAMPLE_DIBOSON,
-		SAMPLE_TAU,
-		SAMPLE_DATA,
-		SAMPLE_ALL
+		SAMPLE_LL,	//0
+		SAMPLE_TOP,	//1
+		SAMPLE_FAKE,	//2
+		SAMPLE_DIBOSON,	//3
+		SAMPLE_TAU,	//4
+		SAMPLE_DATA,	//5
+		SAMPLE_ERR	//6
 	};
 
 	//Variable Types for placing in histograms
@@ -50,47 +50,47 @@ namespace DrellYanVariables
 
 	//File types
 	enum FileName{
-		DYLL_M10to50,				
-		DYLL_M50to100,	
-		DYLL_M100to200,				
-		DYLL_M200to400,				
-		DYLL_M400to500,				
-		DYLL_M500to700,				
-		DYLL_M700to800,				
-		DYLL_M800to1000,				
-		DYLL_M1000to1500,				
-		DYLL_M1500to2000,				
-		DYLL_M2000to3000,				
-		ST_tbarW,					
-		ST_tW,						
-		ttbar_M0To700,			   
-		ttbar_M700to1000,				
-		ttbar_M1000toInf,				
-		WJetsToLNu_amcatnlo_ext2v5,			
-		WJetsToLNu_amcatnlo_ext,			   
-		WJetsToLNu_amcatnlo,				
-		WW,						
-		WZ,						
-		ZZ,						
-		DYLL_M10to50_TauTau,				
-		DYLL_M50to100_TauTau,	
-		DYLL_M100to200_TauTau,				
-		DYLL_M200to400_TauTau,				
-		DYLL_M400to500_TauTau,				
-		DYLL_M500to700_TauTau,				
-		DYLL_M700to800_TauTau,				
-		DYLL_M800to1000_TauTau,				
-		DYLL_M1000to1500_TauTau,			   
-		DYLL_M1500to2000_TauTau,			   
-		DYLL_M2000to3000_TauTau,			   
-		DATA_RunB,					
-		DATA_RunC,					
-		DATA_RunD,					
-		DATA_RunE,					
-		DATA_RunF,					
-		DATA_RunG,					
-		DATA_RunHver2,				
-		DATA_RunHver3				
+		DYLL_M10to50,			//0				
+		DYLL_M50to100,			//1
+		DYLL_M100to200,			//2	
+		DYLL_M200to400,			//3	
+		DYLL_M400to500,			//4	
+		DYLL_M500to700,			//5	
+		DYLL_M700to800,			//6	
+		DYLL_M800to1000,		//7		
+		DYLL_M1000to1500,		//8		
+		DYLL_M1500to2000,		//9		
+		DYLL_M2000to3000,		//10		
+		ST_tbarW,			//11		
+		ST_tW,				//12		
+		ttbar_M0to700,			//13   
+		ttbar_M700to1000,		//14		
+		ttbar_M1000toInf,		//15		
+		WJetsToLNu_amcatnlo_ext2v5,	//16		
+		WJetsToLNu_amcatnlo_ext,	//17		   
+		WJetsToLNu_amcatnlo,		//18		
+		WW,				//19		
+		WZ,				//20		
+		ZZ,				//21		
+		DYLL_M10to50_TauTau,		//22		
+		DYLL_M50to100_TauTau,		//23
+		DYLL_M100to200_TauTau,		//24		
+		DYLL_M200to400_TauTau,		//25		
+		DYLL_M400to500_TauTau,		//26		
+		DYLL_M500to700_TauTau,		//27		
+		DYLL_M700to800_TauTau,		//28	
+		DYLL_M800to1000_TauTau,		//29		
+		DYLL_M1000to1500_TauTau,	//30		   
+		DYLL_M1500to2000_TauTau,	//31		   
+		DYLL_M2000to3000_TauTau,	//32		   
+		DATA_RunB,			//33		
+		DATA_RunC,			//34		
+		DATA_RunD,			//35		
+		DATA_RunE,			//36		
+		DATA_RunF,			//37		
+		DATA_RunG,			//38		
+		DATA_RunHver2,			//39	
+		DATA_RunHver3			//40	
 	};
 
 	//-----V2.6-----//	
@@ -250,19 +250,19 @@ namespace DrellYanVariables
 		0.000730495*3,	//DYLL_1500to2000(NNLO)
 		0.00016844*3	//DYLL_2000to3000(NNLO)
 	};
-	vector<double> xsec_tops = {
+	vector<double> xSec_tops = {
 		35.85,	//ST_tbarW(NNLO)
 		35.85,	//ST_tW(NNLO)
-		795.859,//ttbar_truncated_M0To700 (I calculated from NNLO xsec of full tbar sample)		
-		76.605,	//ttbar_M700to1000(NNLO)	
-		20.578	//ttbar_M1000toInf(NNLO)
+		795.86,//ttbar_truncated_M0To700 (I calculated from NNLO xsec of full tbar sample)		
+		28.385,	//ttbar_M700to1000(NNLO)	
+		7.5154	//ttbar_M1000toInf(NNLO)
 	};
-	vector<double> xsec_dibosons = {
+	vector<double> xSec_dibosons = {
 		118.7,  //WW (NNLO)
 		47.13,  //WZ (NLO)
 		16.523 //ZZ (NLO)
 	};
-	vector<TString> xsec_fakes = {
+	vector<double> xSec_fakes = {
 		61526, //WJetsToLNu_amcatnlo			
 		61526 //WJetsToLNu_amcatnlo_ext",				
 	};

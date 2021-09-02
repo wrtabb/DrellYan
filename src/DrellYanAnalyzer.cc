@@ -3,12 +3,10 @@
 //-----Initialize DrellYanAnalyzer Class-----//
 ///////////////////////////////////////////////
 DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
-				   DrellYanVariables::SampleType sampleType,
 				   DrellYanVariables::LepType lepType,
 				   DrellYanVariables::FileName fileName)
 {
 	using namespace DrellYanVariables;
-	_sampleType = sampleType;
 	_lepType = lepType;
 	_ntupType = ntupType;
 	TFile*puFile = new TFile("data/pileup.root");
@@ -22,8 +20,56 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	}
 
 	_FileToLoad += GetSampleName();
+	_sampleType = GetSampleType();
+	if(_sampleType==SAMPLE_DATA) _isMC = false;
+	else _isMC = true;
+
 }//end function DrellYanAnalyzer()
 
+DrellYanVariables::SampleType DrellYanAnalyzer::GetSampleType()
+{
+	using namespace DrellYanVariables;
+	SampleType sampleType;
+	if(_fileName==DYLL_M10to50     || _fileName==DYLL_M50to100   || 
+	   _fileName==DYLL_M100to200   || _fileName==DYLL_M200to400  || 
+	   _fileName==DYLL_M400to500   || _fileName==DYLL_M500to700  ||
+	   _fileName==DYLL_M700to800   || _fileName==DYLL_M800to1000 || 
+	   _fileName==DYLL_M1000to1500 || _fileName==DYLL_M1500to2000|| 
+	   _fileName==DYLL_M2000to3000) 
+		sampleType=SAMPLE_LL;
+
+	else if(_fileName==ST_tbarW || _fileName==ST_tW || _fileName==	ttbar_M0to700 || 
+		_fileName==ttbar_M700to1000 || _fileName==ttbar_M1000toInf)
+		sampleType=SAMPLE_TOP;
+
+	else if(_fileName==WJetsToLNu_amcatnlo_ext2v5 || 
+		_fileName==WJetsToLNu_amcatnlo_ext ||
+		_fileName==WJetsToLNu_amcatnlo)
+		sampleType=SAMPLE_FAKE;
+
+	else if(_fileName==WW || _fileName==WZ || _fileName==ZZ)
+		sampleType=SAMPLE_DIBOSON;
+
+	else if(_fileName==DYLL_M10to50_TauTau     || _fileName==DYLL_M50to100_TauTau   ||
+		_fileName==DYLL_M100to200_TauTau   || _fileName==DYLL_M200to400_TauTau  ||
+		_fileName==DYLL_M400to500_TauTau   || _fileName==DYLL_M500to700_TauTau  ||
+		_fileName==DYLL_M700to800_TauTau   || _fileName==DYLL_M800to1000_TauTau ||
+		_fileName==DYLL_M1000to1500_TauTau || _fileName==DYLL_M1500to2000_TauTau||
+		_fileName==DYLL_M2000to3000_TauTau)
+		sampleType=SAMPLE_TAU;
+
+	else if(_fileName==DATA_RunB     || _fileName==DATA_RunC || _fileName==DATA_RunD || 
+		_fileName==DATA_RunE     || _fileName==DATA_RunF || _fileName==DATA_RunG ||
+		_fileName==DATA_RunHver2 || _fileName==DATA_RunHver3)
+		sampleType=SAMPLE_DATA;
+
+	else{
+		cout << "ERROR in GetSampleType()" << endl;
+		cout << "file name not properly defined" << endl;
+		return SAMPLE_ERR;	
+	}
+	return sampleType;
+}
 
 ///////////////////////
 //-----Load data-----//
@@ -48,12 +94,12 @@ int DrellYanAnalyzer::LoadTrees()
 	using namespace DrellYanVariables;
 	int returnCode = 1;
 	TTimeStamp ts_start;
-	cout << "Begin loading tree in file:" << _FileToLoad << endl;
 	cout << "[Start Time(local time): " << ts_start.AsString("l") << "]" << endl;
 	TStopwatch totaltime;
 	totaltime.Start();
 
 	TString load_file = _FileToLoad+".root";
+	cout << "Begin loading " << load_file << endl;
 	_tree = new TChain(_treeName);
 	_tree->Add(load_file);
 	_nEvents = _tree->GetEntries();;
@@ -64,6 +110,7 @@ int DrellYanAnalyzer::LoadTrees()
 	TTimeStamp ts_end;
 	cout << endl;
 	cout << "End loading trees:" << endl;
+	cout << "Entries loaded: " << _nEvents << endl;
 	cout << "**************************************************************************" << endl;
 	cout << "Total CPU RunTime: " << TotalCPURunTime << " seconds" << endl;
 	cout << "Total Real RunTime: " << TotalRunTime << " seconds" << endl;
@@ -71,12 +118,6 @@ int DrellYanAnalyzer::LoadTrees()
 	cout << "**************************************************************************" << endl;
 	cout << endl;
 
-	_isMC = true;
-
-	//If tree does not contain GENEvt_weight, it is from data and not MC
-	TBranch*testBranch = (TBranch*)_tree->
-		GetListOfBranches()->FindObject("GENEvt_weight");
-	if(!testBranch) _isMC = false; 
 	InitializeBranches(_tree);
 	
 	return returnCode;
@@ -196,34 +237,35 @@ void DrellYanAnalyzer::InitializeHistograms()
 void DrellYanAnalyzer::DefineHistogramProperties(TH1*hist)
 {
 	using namespace DrellYanVariables;
-	if(!_isMC){
+	if(_sampleType==SAMPLE_LL){
+		hist->SetFillColor(kOrange-2);
+		hist->SetLineColor(kOrange+3);
+	}
+	else if(_sampleType==SAMPLE_TOP){
+		hist->SetFillColor(kBlue+2);
+		hist->SetLineColor(kBlue+3);
+	}
+	else if(_sampleType==SAMPLE_FAKE){
+		hist->SetFillColor(kViolet+5);
+		hist->SetLineColor(kViolet+3);
+	}
+	else if(_sampleType==SAMPLE_DIBOSON){
+		hist->SetFillColor(kRed+2);
+		hist->SetLineColor(kRed+4);
+	}
+	else if(_sampleType==SAMPLE_TAU){
+		hist->SetFillColor(kGreen+2);
+		hist->SetLineColor(kGreen+3);
+	}
+	else if(_sampleType==SAMPLE_DATA){
 		hist->SetMarkerStyle(20);
 		hist->SetMarkerColor(kBlack);
 		hist->SetLineColor(kBlack);
 		hist->SetFillColor(kWhite);
-	}//end !isMC
-	else{
-		if(_sampleType==SAMPLE_LL){
-			hist->SetFillColor(kOrange-2);
-			hist->SetLineColor(kOrange+3);
-		}
-		else if(_sampleType==SAMPLE_TOP){
-			hist->SetFillColor(kBlue+2);
-			hist->SetLineColor(kBlue+3);
-		}
-		else if(_sampleType==SAMPLE_FAKE){
-			hist->SetFillColor(kViolet+5);
-			hist->SetLineColor(kViolet+3);
-		}
-		else if(_sampleType==SAMPLE_DIBOSON){
-			hist->SetFillColor(kRed+2);
-			hist->SetLineColor(kRed+4);
-		}
-		else if(_sampleType==SAMPLE_TAU){
-			hist->SetFillColor(kGreen+2);
-			hist->SetLineColor(kGreen+3);
-		}
-	}//end else
+	}
+	else cout << "ERROR in DefineHistogramProperties" << endl;
+
+	return;
 }//end DefineHistogramProperties()
 
 /////////////////////////
@@ -239,6 +281,8 @@ double DrellYanAnalyzer::GetSampleWeights()
 	//-----Cross section-----//
 	double xSecWeight = 1.0;
 	double xSec = 1.0;
+
+	// Drell-Yan to leptons
 	if(_fileName==DYLL_M10to50 ||
 	   _fileName==DYLL_M10to50_TauTau) xSec = xSec_LL.at(0);
 	else if(_fileName==DYLL_M50to100 ||
@@ -261,7 +305,18 @@ double DrellYanAnalyzer::GetSampleWeights()
 		_fileName==DYLL_M1500to2000_TauTau) xSec = xSec_LL.at(9);
 	else if(_fileName==DYLL_M2000to3000 ||
 		_fileName==DYLL_M2000to3000_TauTau) xSec = xSec_LL.at(10);
+
+	// tops
+	else if(_fileName==ST_tbarW) 	     xSec = xSec_tops.at(0);
+	else if(_fileName==ST_tW) 	     xSec = xSec_tops.at(1);
+	else if(_fileName==ttbar_M0to700)    xSec = xSec_tops.at(2);
+	else if(_fileName==ttbar_M700to1000) xSec = xSec_tops.at(3);
+	else if(_fileName==ttbar_M1000toInf) xSec = xSec_tops.at(4);
 	
+	// Fakes
+	else if(_fileName==WJetsToLNu_amcatnlo)     xSec = xSec_fakes.at(0); 
+	else if(_fileName==WJetsToLNu_amcatnlo_ext) xSec = xSec_fakes.at(1);
+
 	//When cross section weights are applied with gen weights,
 	//You don't divide by the number of events
 	//For the TEST cases, I don't use gen weights because
@@ -613,35 +668,34 @@ int DrellYanAnalyzer::GetRecoLeptons(int &leadLep,int &subLep)
 int DrellYanAnalyzer::GetRecoElectrons(int &leadEle,int &subEle)
 {
 	using namespace DrellYanVariables;
-	int numDielectrons = 0;
-	double pt1;
-	double pt2;
-	double eta1;
-	double eta2;
+	double ptLead = -1000;
+	double ptSub = -1000;
+	double etaLead = -1000;
+	double etaSub = -1000;
+	int idxLead = -1;
+	int idxSub = -1;
 
+	if(Nelectrons<2) return 0;
 	for(int iEle = 0; iEle < Nelectrons; iEle++) {
 		if(!Electron_passMediumID[iEle]) continue;
-		for(int jEle = iEle+1; jEle < Nelectrons; jEle++) {
-			if(!Electron_passMediumID[jEle]) continue;
-			pt1 = Electron_pT[iEle];
-			pt2 = Electron_pT[jEle];
-			eta1 = Electron_eta[iEle];
-			eta2 = Electron_eta[jEle];
-			if(PassAcceptance(pt1,pt2,eta1,eta2)){
-				numDielectrons++;
-				if(pt1>pt2){
-					leadEle = iEle;
-					subEle = jEle;
-				}
-				else {
-					leadEle = jEle;
-					subEle = iEle;
-				}
-			}//end if pass acceptance
-		}//end jEle loop
+			if(Electron_pT[iEle] > ptLead){
+				ptLead = Electron_pT[iEle];
+				etaLead = Electron_eta[iEle];
+				idxLead = iEle;
+			}
+			if(Electron_pT[iEle] > ptSub && Electron_pT[iEle] < ptLead){
+				ptSub = Electron_pT[iEle];
+				etaSub = Electron_eta[iEle];
+				idxSub = iEle;
+			}
 	}//end iEle loop
 
-	return numDielectrons;
+	if(PassAcceptance(ptLead,ptSub,etaLead,etaSub)){
+		leadEle = idxLead;
+		subEle = idxSub;
+		return 1;
+	}
+	else return 0;
 }//end GetRecoElecrons()
 
 int DrellYanAnalyzer::GetRecoMuons(int &leadMu,int &subMu)
@@ -712,8 +766,8 @@ bool DrellYanAnalyzer::PassAcceptance(double pt1,double pt2,double eta1,double e
 	
 	//I think we are not excluding the gap region in the ECAL, so I commented these out
 	//But the lines can be uncommented if we want to exclude the gap
-	//if(abs(eta1)>etaGapLow && abs(eta1)<etaGapHigh) return false;
-	//if(abs(eta2)>etaGapLow && abs(eta2)<etaGapHigh) return false;
+	if(abs(eta1)>etaGapLow && abs(eta1)<etaGapHigh) return false;
+	if(abs(eta2)>etaGapLow && abs(eta2)<etaGapHigh) return false;
 	
 	//Ensure both leptons are below |eta| = 2.4
 	if(abs(eta1)>etaHigh||abs(eta2)>etaHigh) return false;
@@ -864,13 +918,12 @@ void DrellYanAnalyzer::SaveResults()
 		return;
 	}
 
-	if(_sampleType==SAMPLE_LL) filesave += "_DYtoLL";
-	else if(_sampleType==SAMPLE_TOP) filesave += "_TT";
-	else if(_sampleType==SAMPLE_FAKE) filesave += "_Fakes";
+	if(_sampleType==SAMPLE_LL) 	      filesave += "_DYtoLL";
+	else if(_sampleType==SAMPLE_TOP)      filesave += "_Top";
+	else if(_sampleType==SAMPLE_FAKE)     filesave += "_Fake";
 	else if (_sampleType==SAMPLE_DIBOSON) filesave += "_Diboson";
-	else if (_sampleType==SAMPLE_TAU) filesave += "_TauTau";
-	else if (_sampleType==SAMPLE_DATA) filesave += "_Data";
-	else if (_sampleType==SAMPLE_ALL) filesave += "_All";
+	else if (_sampleType==SAMPLE_TAU)     filesave += "_TauTau";
+	else if (_sampleType==SAMPLE_DATA)    filesave += "_Data";
 	else {
 		cout << "*****************************************************" << endl;
 		cout << "ERROR in SaveResults() " << endl;	
@@ -902,6 +955,17 @@ void DrellYanAnalyzer::SaveResults()
         else if(_fileName==DATA_RunHver2) filesave += "_DATA_RunHver2";
         else if(_fileName==DATA_RunHver3) filesave += "_DATA_RunHver3";
 
+	// Tops
+	else if(_fileName==ST_tbarW)         filesave += "_ST_tbarW";
+	else if(_fileName==ST_tW) 	     filesave += "_ST_tW";
+	else if(_fileName==ttbar_M0to700)    filesave += "_ttbar_M0to700";
+	else if(_fileName==ttbar_M700to1000) filesave += "_ttbar_M700to1000";
+	else if(_fileName==ttbar_M1000toInf) filesave += "_ttbar_M1000toInf";
+
+	// Fakes
+	else if(_fileName==WJetsToLNu_amcatnlo)     filesave += "_WJetsToLNu";  
+	else if(_fileName==WJetsToLNu_amcatnlo_ext) filesave += "_WJetsToLNuExt";
+
 	else{
 		cout << "_FileToLoad not properly defined" << endl;
 		return;
@@ -931,6 +995,8 @@ TString DrellYanAnalyzer::GetSampleName()
 	using namespace DrellYanVariables;
 
 	TString sampleName;
+
+	// Dileptons
 	if(_lepType==ELE){
 		if(_fileName==DYLL_M10to50) 	     sampleName += "DYLL_M10to50_EE";
 		else if(_fileName==DYLL_M50to100)    sampleName += "DYLL_M50to100_EE";
@@ -974,12 +1040,17 @@ TString DrellYanAnalyzer::GetSampleName()
 		else if(_fileName==DATA_RunHver3)sampleName += "SingleMuon_Run2016Hver3";
 	}//end if leptype = MUON
 
-	//Data
-	else{
-		cout << "FileName not properly chosen" << endl;
-		cout << "See include/DrellYanVariables.h to see possible FileNames" << endl;
-		return "ERROR";
-	}
+	// Tops
+	if(_fileName==ST_tbarW)		     sampleName += "ST_tbarW";
+	else if(_fileName==ST_tW)	     sampleName += "ST_tW";
+	else if(_fileName==ttbar_M0to700)    sampleName += "ttbar_M0to700";
+	else if(_fileName==ttbar_M700to1000) sampleName += "ttbar_M700to1000";
+	else if(_fileName==ttbar_M1000toInf) sampleName += "ttbar_M1000toInf";
+
+	else if(_fileName==WJetsToLNu_amcatnlo)     
+		sampleName += "WJetsToLNu_amcatnlo.root";
+	else if(_fileName==WJetsToLNu_amcatnlo_ext) 
+		sampleName += "WJetsToLNu_amcatnloi_ext.root";
 
 	return sampleName;
 }//end GetSampleName

@@ -19,7 +19,6 @@ class DrellYanAnalyzer
 {
 	public:
 		DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
-				 DrellYanVariables::SampleType sampletype,
 				 DrellYanVariables::LepType lepType,
 				 DrellYanVariables::FileName fileName);
 		int GetRecoLeptons(int &leadLep,int &subLep);
@@ -61,7 +60,7 @@ class DrellYanAnalyzer
 		int InitializeBranches(TChain*chain);
 		void InitializeHistograms();
 		TString GetSampleName();
-
+		DrellYanVariables::SampleType GetSampleType();
 
 		//calculations
 		double GetSampleWeights();

@@ -31,8 +31,8 @@ mv DrellYanVariables.h include
 
 # Run Processing code 
 echo "Run the tree analysis script"
-echo "ProcessDrellYan.py $1 $2 $3 $4"
-python3 ProcessDrellYan.py $1 $2 $3 $4
+echo "ProcessDrellYan.py $1 $2 $3"
+python3 ProcessDrellYan.py $1 $2 $3
 
 echo "Ending processing at " $(date)
 
