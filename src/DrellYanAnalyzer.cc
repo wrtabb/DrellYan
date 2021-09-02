@@ -9,8 +9,6 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	using namespace DrellYanVariables;
 	_lepType = lepType;
 	_ntupType = ntupType;
-	TFile*puFile = new TFile("data/pileup.root");
-        _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
 	_fileName = fileName;
 	if(ntupType==V2P6) _FileToLoad = base_directory_v2p6;
 	else if(ntupType==TEST) _FileToLoad = base_directory_test;
@@ -23,6 +21,18 @@ DrellYanAnalyzer::DrellYanAnalyzer(DrellYanVariables::NtupleType ntupType,
 	_sampleType = GetSampleType();
 	if(_sampleType==SAMPLE_DATA) _isMC = false;
 	else _isMC = true;
+
+	// Scale Factor files
+	_fRecoSF  = new TFile("data/Reco_SF.root");
+	_fMedIDSF = new TFile("data/MediumID_SF.root");
+	_fLeg2SF  = new TFile("data/Leg2_SF.root");
+	_hRecoSF  = (TH2F*)_fRecoSF->Get("EGamma_SF2D"); 
+	_hMedIDSF = (TH2F*)_fMedIDSF->Get("EGamma_SF2D"); 
+	_hLeg2SF  = (TH2F*)_fLeg2SF->Get("EGamma_SF2D");
+
+	// Pileup weighting files
+	TFile*puFile = new TFile("data/pileup.root");
+        _hPileupRatio = (TH1F*)puFile->Get("hPileupRatio");
 
 }//end function DrellYanAnalyzer()
 
@@ -317,6 +327,11 @@ double DrellYanAnalyzer::GetSampleWeights()
 	else if(_fileName==WJetsToLNu_amcatnlo)     xSec = xSec_fakes.at(0); 
 	else if(_fileName==WJetsToLNu_amcatnlo_ext) xSec = xSec_fakes.at(1);
 
+	// Dibosons
+	else if(_fileName==WW) xSec = xSec_dibosons.at(0);
+	else if(_fileName==WZ) xSec = xSec_dibosons.at(1);
+	else if(_fileName==ZZ) xSec = xSec_dibosons.at(2);
+	
 	//When cross section weights are applied with gen weights,
 	//You don't divide by the number of events
 	//For the TEST cases, I don't use gen weights because
@@ -329,13 +344,20 @@ double DrellYanAnalyzer::GetSampleWeights()
 	return weight;
 }//end GetSampleWeights()
 
-double DrellYanAnalyzer::GetEventWeights()
+double DrellYanAnalyzer::GetEventWeights(double pt1,double pt2,double eta1,double eta2)
 {
 	using namespace DrellYanVariables;
+	
+	// Pileup weights
 	double puWeight = GetPUWeight();
-	double sfWeight = 1.0;
 
-	return sfWeight*puWeight;	
+	// Electron Scale Factors
+	double eleSF = 1.0;
+	if(_isMC && _lepType==ELE){
+		eleSF = GetEleScaleFactors(pt1,pt2,eta1,eta2);
+	}
+
+	return eleSF*puWeight;	
 }//end GetEventWeights()
 
 double DrellYanAnalyzer::GetGenWeightSum()
@@ -383,9 +405,38 @@ double DrellYanAnalyzer::GetPUWeight()
 {
 	using namespace DrellYanVariables;
 	double puWeight = 1.0;	
+
 	puWeight = _hPileupRatio->GetBinContent(_hPileupRatio->FindBin(nPileUp));
 	return puWeight;
 }
+
+double DrellYanAnalyzer::GetEleScaleFactors(double pt1,double pt2,double eta1,double eta2)
+{
+
+	double sfReco1,sfReco2,sfID1,sfID2,sfHLT,sfWeight;
+
+	double ptBinHigh = 500;
+	double etaBinLow = -2.5;
+	double etaBinHigh = 2.5;
+ 
+	if(pt1>ptBinHigh) pt1 = ptBinHigh;
+	if(pt2>ptBinHigh) pt2 = ptBinHigh;
+	if(eta1>etaBinHigh) eta1 = etaBinHigh;
+	if(eta2>etaBinHigh) eta2 = etaBinHigh;
+	if(eta1<etaBinLow)  eta1 = etaBinLow;
+	if(eta2<etaBinLow)  eta2 = etaBinLow;
+
+	sfReco1 =  _hRecoSF->GetBinContent(_hRecoSF->FindBin(eta1,pt1));
+	sfReco2 =  _hRecoSF->GetBinContent(_hRecoSF->FindBin(eta2,pt2));
+	sfID1   = _hMedIDSF->GetBinContent(_hMedIDSF->FindBin(eta1,pt1));
+	sfID2   = _hMedIDSF->GetBinContent(_hMedIDSF->FindBin(eta2,pt2));
+	sfHLT   = (_hLeg2SF->GetBinContent(_hLeg2SF->FindBin(eta1,pt1)))*
+		  (_hLeg2SF->GetBinContent(_hLeg2SF->FindBin(eta2,pt2)));
+
+	sfWeight = sfReco1*sfReco2*sfID1*sfID2*sfHLT;
+
+	return sfWeight;
+}//end GetScaleFactors
 
 ///////////////////////////////////////
 //-----Get Leptons From an Event-----//
@@ -482,14 +533,6 @@ int DrellYanAnalyzer::EventLoop()
 		//Get event from tree
 		_tree->GetEntry(iEntry);
 
-		//Calculate genweight for MC samples
-		double genWeight = 1.0;
-		double eventWeight = 1.0;
-		if(_isMC){
-			genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;
-			eventWeight = GetEventWeights();
-		}
-
 		//Get gen level leptons
 		int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
 						  iFSR1,iFSR2);
@@ -581,6 +624,15 @@ int DrellYanAnalyzer::EventLoop()
 					 	     prunedPhi1,prunedPt2,
 					 	     prunedEta2,prunedPhi2);
 		}//end if nDileptons>0
+
+		//Calculate genweight for MC samples
+		double genWeight = 1.0;
+		double eventWeight = 1.0;
+		if(_isMC){
+			genWeight = (GENEvt_weight/fabs(GENEvt_weight))/sumGenWeight;
+			eventWeight = GetEventWeights(recoPt1,recoPt2,recoEta1,recoEta2);
+		}
+
 	
 		double weights = xSecWeight*eventWeight*genWeight;
 		//Fill all histograms
@@ -945,6 +997,19 @@ void DrellYanAnalyzer::SaveResults()
 	else if(_fileName==DYLL_M1500to2000) filesave += "_DYLL_M1500to2000";
 	else if(_fileName==DYLL_M2000to3000) filesave += "_DYLL_M2000to3000";
 
+	// Taus
+	if(_fileName==DYLL_M10to50_TauTau)          filesave += "_DYLL_M10to50_TauTau";
+	else if(_fileName==DYLL_M50to100_TauTau)    filesave += "_DYLL_M50to100_TauTau";
+	else if(_fileName==DYLL_M100to200_TauTau)   filesave += "_DYLL_M100to200_TauTau";
+	else if(_fileName==DYLL_M200to400_TauTau)   filesave += "_DYLL_M200to400_TauTau";
+	else if(_fileName==DYLL_M400to500_TauTau)   filesave += "_DYLL_M400to500_TauTau";
+	else if(_fileName==DYLL_M500to700_TauTau)   filesave += "_DYLL_M500to700_TauTau";
+	else if(_fileName==DYLL_M700to800_TauTau)   filesave += "_DYLL_M700to800_TauTau";
+	else if(_fileName==DYLL_M800to1000_TauTau)  filesave += "_DYLL_M800to1000_TauTau";
+	else if(_fileName==DYLL_M1000to1500_TauTau) filesave += "_DYLL_M1000to1500_TauTau";
+	else if(_fileName==DYLL_M1500to2000_TauTau) filesave += "_DYLL_M1500to2000_TauTau";
+	else if(_fileName==DYLL_M2000to3000_TauTau) filesave += "_DYLL_M2000to3000_TauTau";
+	
 	//Data
 	else if(_fileName==DATA_RunB)     filesave += "_DATA_RunB";
 	else if(_fileName==DATA_RunC)     filesave += "_DATA_RunC";
@@ -965,6 +1030,11 @@ void DrellYanAnalyzer::SaveResults()
 	// Fakes
 	else if(_fileName==WJetsToLNu_amcatnlo)     filesave += "_WJetsToLNu";  
 	else if(_fileName==WJetsToLNu_amcatnlo_ext) filesave += "_WJetsToLNuExt";
+
+	// Dibosons
+	else if(_fileName==WW) filesave += "_WW";
+	else if(_fileName==WZ) filesave += "_WZ";
+	else if(_fileName==ZZ) filesave += "_ZZ";
 
 	else{
 		cout << "_FileToLoad not properly defined" << endl;
@@ -1047,11 +1117,30 @@ TString DrellYanAnalyzer::GetSampleName()
 	else if(_fileName==ttbar_M700to1000) sampleName += "ttbar_M700to1000";
 	else if(_fileName==ttbar_M1000toInf) sampleName += "ttbar_M1000toInf";
 
+	// Fakes
 	else if(_fileName==WJetsToLNu_amcatnlo)     
-		sampleName += "WJetsToLNu_amcatnlo.root";
+		sampleName += "WJetsToLNu_amcatnlo";
 	else if(_fileName==WJetsToLNu_amcatnlo_ext) 
-		sampleName += "WJetsToLNu_amcatnloi_ext.root";
+		sampleName += "WJetsToLNu_amcatnloi_ext";
 
+	// Dibosons
+	else if(_fileName==WW) sampleName += "WW";
+	else if(_fileName==WZ) sampleName += "WZ";
+	else if(_fileName==ZZ) sampleName += "ZZ";
+
+	// Taus
+	if(_fileName==DYLL_M10to50_TauTau)          sampleName += "DYLL_M10to50_TauTau";
+	else if(_fileName==DYLL_M50to100_TauTau)    sampleName += "DYLL_M50to100_TauTau";
+	else if(_fileName==DYLL_M100to200_TauTau)   sampleName += "DYLL_M100to200_TauTau";
+	else if(_fileName==DYLL_M200to400_TauTau)   sampleName += "DYLL_M200to400_TauTau";
+	else if(_fileName==DYLL_M400to500_TauTau)   sampleName += "DYLL_M400to500_TauTau";
+	else if(_fileName==DYLL_M500to700_TauTau)   sampleName += "DYLL_M500to700_TauTau";
+	else if(_fileName==DYLL_M700to800_TauTau)   sampleName += "DYLL_M700to800_TauTau";
+	else if(_fileName==DYLL_M800to1000_TauTau)  sampleName += "DYLL_M800to1000_TauTau";
+	else if(_fileName==DYLL_M1000to1500_TauTau) sampleName += "DYLL_M1000to1500_TauTau";
+	else if(_fileName==DYLL_M1500to2000_TauTau) sampleName += "DYLL_M1500to2000_TauTau";
+	else if(_fileName==DYLL_M2000to3000_TauTau) sampleName += "DYLL_M2000to3000_TauTau";
+	
 	return sampleName;
 }//end GetSampleName
 

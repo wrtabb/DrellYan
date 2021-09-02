@@ -4,6 +4,7 @@
 //ROOT functions
 #include <TChain.h>
 #include <TH1F.h>
+#include <TH2F.h>
 #include <TString.h>
 #include <iostream>
 #include <TTimeStamp.h>
@@ -45,6 +46,10 @@ class DrellYanAnalyzer
 		TH1D*_hRapidityReco;
 		TH1D*_hPtReco;
 		TH1F*_hPileupRatio;
+		
+		TH2F*_hRecoSF;
+		TH2F*_hMedIDSF;
+		TH2F*_hLeg2SF;
 		void DefineHistogramProperties(TH1*hist);
 	
 		//Tree definitions
@@ -53,6 +58,10 @@ class DrellYanAnalyzer
 		//Files
 		TString _base_directory;
 		TString _FileToLoad;
+
+		TFile*_fRecoSF;
+		TFile*_fMedIDSF;
+		TFile*_fLeg2SF;
 
 		//-----Functions-----//
 		//loading data
@@ -64,9 +73,10 @@ class DrellYanAnalyzer
 
 		//calculations
 		double GetSampleWeights();
-		double GetEventWeights();
+		double GetEventWeights(double pt1,double pt2,double eta1,double eta2);
 		double GetGenWeightSum();
 		double GetPUWeight();
+		double GetEleScaleFactors(double pt1,double pt2,double eta1,double eta2);
 		double GetInvMass(double pt1,double eta1,double phi1,
 				  double pt2,double eta2,double phi2);
 		double GetRapidity(double pt1,double eta1,double phi1,

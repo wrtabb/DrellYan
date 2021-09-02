@@ -23,6 +23,10 @@ mv DrellYanAnalyzer.cc src
 # directory to place input data files
 mkdir data
 mv pileup.root data
+mv Leg2_SF.root data
+mv PVz.root data
+mv MediumID_SF.root data
+mv Reco_SF.root data
 
 # directory to place included files
 mkdir include

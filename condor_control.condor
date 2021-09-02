@@ -2,7 +2,7 @@
 universe		= Docker 
 executable              = ProcessDrellYan.sh 
 arguments               = $(arg1) $(arg2) $(arg3)
-transfer_input_files    = test.C,src/DrellYanAnalyzer.cc,include/DrellYanAnalyzer.hh,include/DrellYanVariables.h,ProcessDrellYan.py,rootlogon.C,data/pileup.root 
+transfer_input_files    = test.C,src/DrellYanAnalyzer.cc,include/DrellYanAnalyzer.hh,include/DrellYanVariables.h,ProcessDrellYan.py,rootlogon.C,data/pileup.root,data/Leg2_SF.root,data/MediumID_SF.root,data/Reco_SF.root 
 
 +WantDocker = True
 docker_image ="unlhcc/osg-wn-el7"
