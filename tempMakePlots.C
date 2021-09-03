@@ -3,16 +3,16 @@ void tempMakePlots()
 {
 	//gROOT->SetBatch(true);
 	vector<TString> file_list = {
+
+		"output_data/DYHists_v2p6_Data_DATA_RunB_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunC_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunD_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunE_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunF_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunG_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunHver2_EE.root",
+		"output_data/DYHists_v2p6_Data_DATA_RunHver3_EE.root"
 /*
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunB_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunC_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunD_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunE_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunF_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunG_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunHver2_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DATA_RunHver3_EE.root"
-*/
 		"output_data/DYHists_v2p6_DYtoLL_DYLL_M10to50_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DYLL_M50to100_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DYLL_M100to200_EE.root",
@@ -24,6 +24,7 @@ void tempMakePlots()
 		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1000to1500_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1500to2000_EE.root",
 		"output_data/DYHists_v2p6_DYtoLL_DYLL_M2000to3000_EE.root"
+*/
 	};
 	
 	vector<TFile*> files;

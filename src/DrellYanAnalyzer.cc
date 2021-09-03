@@ -532,6 +532,8 @@ int DrellYanAnalyzer::EventLoop()
 		//Get event from tree
 		_tree->GetEntry(iEntry);
 
+		//Check if event passes HLT criteria
+		bool passHLT = PassHLT(); 
 		//Get gen level leptons
 		int nDileptonsGen = GetGenLeptons(iHard1,iHard2,
 						  iFSR1,iFSR2);
@@ -539,7 +541,7 @@ int DrellYanAnalyzer::EventLoop()
 		//Get reco level leptons
 		int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
 
-		if(nDileptonsGen==1 || !_isMC){
+		if((nDileptonsGen==1 || !_isMC) && passHLT){
 			hardPt1  = GENLepton_pT[iHard1];
 			hardEta1 = GENLepton_eta[iHard1];
 			hardPhi1 = GENLepton_phi[iHard1];
@@ -632,6 +634,7 @@ int DrellYanAnalyzer::EventLoop()
 			eventWeight = GetEventWeights(recoPt1,recoPt2,recoEta1,recoEta2);
 		}
 
+		
 	
 		double weights = xSecWeight*eventWeight*genWeight;
 		//Fill all histograms
@@ -839,7 +842,8 @@ bool DrellYanAnalyzer::PassHLT()
 	for(int iHLT=0;iHLT<trigNameSize;iHLT++) {
 		trigName = pHLT_trigName->at(iHLT);
 		if(_lepType==ELE){
-			if(trigName.CompareTo(electronTrigger)==0 && HLT_trigFired[iHLT]==1){
+			if(trigName.CompareTo(electronTrigger)==0 && HLT_trigFired[iHLT]==1)
+			{
 				passHLT = true;
 				break;
 			}//end if trigName...
