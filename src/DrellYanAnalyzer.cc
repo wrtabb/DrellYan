@@ -356,7 +356,6 @@ double DrellYanAnalyzer::GetEventWeights(double pt1,double pt2,double eta1,doubl
 	if(_isMC && _lepType==ELE){
 		eleSF = GetEleScaleFactors(pt1,pt2,eta1,eta2);
 	}
-
 	return eleSF*puWeight;	
 }//end GetEventWeights()
 
@@ -998,7 +997,7 @@ void DrellYanAnalyzer::SaveResults()
 	else if(_fileName==DYLL_M2000to3000) filesave += "_DYLL_M2000to3000";
 
 	// Taus
-	if(_fileName==DYLL_M10to50_TauTau)          filesave += "_DYLL_M10to50_TauTau";
+	else if(_fileName==DYLL_M10to50_TauTau)          filesave += "_DYLL_M10to50_TauTau";
 	else if(_fileName==DYLL_M50to100_TauTau)    filesave += "_DYLL_M50to100_TauTau";
 	else if(_fileName==DYLL_M100to200_TauTau)   filesave += "_DYLL_M100to200_TauTau";
 	else if(_fileName==DYLL_M200to400_TauTau)   filesave += "_DYLL_M200to400_TauTau";
