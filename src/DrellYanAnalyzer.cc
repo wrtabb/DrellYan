@@ -541,7 +541,13 @@ int DrellYanAnalyzer::EventLoop()
 		//Get reco level leptons
 		int nDileptonsReco = GetRecoLeptons(iLep1,iLep2);
 
-		if((nDileptonsGen==1 || !_isMC) && passHLT){
+		// CHeck if reco leptons match with gen leptons
+		bool passGenToRecoMatch1 = PassGenToRecoMatch(iFSR1,iLep1);
+		bool passGenToRecoMatch2 = PassGenToRecoMatch(iFSR2,iLep2);
+		bool passGenToReco = false;
+		if(passGenToRecoMatch1 && passGenToRecoMatch2) passGenToReco = true;
+
+		if((nDileptonsGen==1 || !_isMC) && passHLT && passGenToReco){
 			hardPt1  = GENLepton_pT[iHard1];
 			hardEta1 = GENLepton_eta[iHard1];
 			hardPhi1 = GENLepton_phi[iHard1];
