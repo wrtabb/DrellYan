@@ -4,26 +4,26 @@ void tempMakePlots()
 	//gROOT->SetBatch(true);
 	vector<TString> file_list = {
 
-		"output_data/DYHists_v2p6_Data_DATA_RunB_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunC_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunD_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunE_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunF_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunG_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunHver2_EE.root",
-		"output_data/DYHists_v2p6_Data_DATA_RunHver3_EE.root"
+		"output_data/DYHists_v2p6_Data_RunB_EE.root",
+		"output_data/DYHists_v2p6_Data_RunC_EE.root",
+		"output_data/DYHists_v2p6_Data_RunD_EE.root",
+		"output_data/DYHists_v2p6_Data_RunE_EE.root",
+		"output_data/DYHists_v2p6_Data_RunF_EE.root",
+		"output_data/DYHists_v2p6_Data_RunG_EE.root",
+		"output_data/DYHists_v2p6_Data_RunHver2_EE.root",
+		"output_data/DYHists_v2p6_Data_RunHver3_EE.root"
 /*
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M10to50_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M50to100_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M100to200_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M200to400_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M400to500_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M500to700_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M700to800_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M800to1000_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1000to1500_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M1500to2000_EE.root",
-		"output_data/DYHists_v2p6_DYtoLL_DYLL_M2000to3000_EE.root"
+		"output_data/DYHists_v2p6_DYtoLL_M10to50_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M50to100_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M100to200_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M200to400_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M400to500_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M500to700_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M700to800_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M800to1000_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M1000to1500_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M1500to2000_EE.root",
+		"output_data/DYHists_v2p6_DYtoLL_M2000to3000_EE.root"
 */
 	};
 	
@@ -56,18 +56,18 @@ void tempMakePlots()
 	c1->SetGrid();
 	c1->SetLogx();
 	c1->SetLogy();
-	histInvMass.at(0)->Draw("pe");
-	c1->SaveAs("plots/DYtoEE_InvMassData.png");
+	histInvMass.at(0)->Draw("hist");
+//	c1->SaveAs("plots/DYtoEE_InvMassData.png");
 
 	TCanvas*c2 = new TCanvas("c2","",0,0,1000,1000);
 	c2->SetGrid();
 	c2->SetLogy();
-	histRapidity.at(0)->Draw("pe");
-	c2->SaveAs("plots/DYtoEE_RapidityData.png");
+	histRapidity.at(0)->Draw("hist");
+//	c2->SaveAs("plots/DYtoEE_RapidityData.png");
 
 	TCanvas*c3 = new TCanvas("c3","",0,0,1000,1000);
 	c3->SetGrid();
 	c3->SetLogy();
-	histPt.at(0)->Draw("pe");
-	c3->SaveAs("plots/DYtoEE_PtData.png");
+	histPt.at(0)->Draw("hist");
+//	c3->SaveAs("plots/DYtoEE_PtData.png");
 }
